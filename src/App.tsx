@@ -4,8 +4,9 @@ import { LoginPage } from './pages/LoginPage'
 import './App.css'
 
 function AppShell() {
-  const { user } = useAuth()
-  return user ? <DashboardPage /> : <LoginPage />
+  const { status } = useAuth()
+  if (status === 'loading') return <p id="loading">Loading…</p>
+  return status === 'signed-in' ? <DashboardPage /> : <LoginPage />
 }
 
 function App() {

@@ -1,7 +1,7 @@
 import { useAuth } from '../auth/AuthContext'
 
 export function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, error } = useAuth()
 
   return (
     <section id="login">
@@ -10,6 +10,7 @@ export function LoginPage() {
       <button type="button" onClick={signIn}>
         Sign in with Google
       </button>
+      {error && <p className="error">{error}</p>}
     </section>
   )
 }

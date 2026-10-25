@@ -13,3 +13,7 @@
   gap: 12px;
   align-items: center;
 }
+
+.error {
+  color: #d64545;
+}
