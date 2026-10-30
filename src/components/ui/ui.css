@@ -1,0 +1,197 @@
+/* Chrome / gel / LCD theme for reusable UI primitives. */
+
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--heading);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  text-transform: none;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.05s ease, background 0.15s ease;
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* Primary: glossy maroon gel, matching the logo red. One per view. */
+.ui-button--primary {
+  position: relative;
+  background: var(--chrome-gradient-red);
+  color: var(--chrome-text-red);
+  text-shadow: var(--chrome-text-shadow-red-btn);
+  box-shadow: var(--chrome-shadow-red);
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  background: var(--chrome-gradient-red-hover);
+  box-shadow: var(--chrome-shadow-red-hover);
+}
+
+.ui-button--primary:active:not(:disabled) {
+  background: var(--chrome-gradient-red-active);
+  transform: translateY(1px);
+}
+
+/* Secondary: brushed gunmetal chrome pill — hardware, not an action. */
+.ui-button--secondary {
+  position: relative;
+  background: var(--chrome-gradient);
+  color: var(--chrome-text);
+  text-shadow: var(--chrome-text-shadow-btn);
+  box-shadow: var(--chrome-shadow);
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  background: var(--chrome-gradient-hover);
+  box-shadow: var(--chrome-shadow-hover);
+}
+
+.ui-button--secondary:active:not(:disabled) {
+  background: var(--chrome-gradient-active);
+  transform: translateY(1px);
+}
+
+.ui-button--secondary .ui-button__label {
+  position: relative;
+}
+
+/* Ivory: glossy cream enamel for brand sign-in actions (Google, etc). */
+.ui-button--ivory {
+  position: relative;
+  background: var(--chrome-gradient-ivory);
+  color: var(--chrome-text-ivory);
+  text-shadow: var(--chrome-text-shadow-ivory-btn);
+  box-shadow: var(--chrome-shadow-ivory);
+}
+
+.ui-button--ivory:hover:not(:disabled) {
+  background: var(--chrome-gradient-ivory-hover);
+  box-shadow: var(--chrome-shadow-ivory-hover);
+}
+
+.ui-button--ivory:active:not(:disabled) {
+  background: var(--chrome-gradient-ivory-active);
+  transform: translateY(1px);
+}
+
+.ui-button--danger {
+  color: var(--chrome-text-red);
+  text-shadow: var(--chrome-text-shadow-red-btn);
+  background: linear-gradient(180deg, #8a8d94 0%, #5c0202 12%, #3f0101 75%, #650202 100%);
+  box-shadow: var(--chrome-shadow-red);
+}
+
+.ui-button--danger:hover:not(:disabled) {
+  box-shadow: var(--chrome-shadow-red-hover);
+}
+
+.ui-button--sm {
+  padding: 7px 16px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  border-radius: 9px;
+}
+
+/* Card: the "carapace" panel. */
+
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 22px;
+  padding: 22px;
+  text-align: left;
+  box-shadow: var(--surface-shadow);
+}
+
+.ui-card--interactive {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.ui-card--interactive:hover {
+  box-shadow: var(--surface-shadow), 0 0 0 1px rgba(255, 59, 59, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Field (TextField / Select): a recessed phosphor well for numbers,
+   a plain recessed well for everything else. */
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.ui-field label {
+  font-family: var(--heading);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--label-red);
+}
+
+.ui-field input,
+.ui-field select {
+  width: 100%;
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 15px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  color: var(--bone);
+}
+
+.ui-field input[type='number'] {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  background: var(--lcd-bg);
+  box-shadow: var(--lcd-shadow);
+  color: var(--lcd-glow-color);
+  text-shadow: var(--lcd-glow-shadow);
+}
+
+.ui-field input:focus,
+.ui-field select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Badge */
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--chrome-gradient-red);
+  color: var(--chrome-text-red);
+  text-shadow: var(--chrome-text-shadow-red-btn);
+  box-shadow: var(--chrome-shadow-red);
+}
+
+.ui-badge--neutral {
+  background: var(--chrome-gradient);
+  color: var(--chrome-text);
+  text-shadow: var(--chrome-text-shadow-btn);
+  box-shadow: var(--chrome-shadow);
+}

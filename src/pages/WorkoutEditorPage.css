@@ -1,0 +1,153 @@
+.workout-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+}
+
+.workout-editor__row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.workout-editor__row > * {
+  flex: 1;
+  min-width: 180px;
+
+  @media (max-width: 480px) {
+    min-width: 100%;
+  }
+}
+
+.workout-editor__entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workout-editor__entry {
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.workout-editor__entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.workout-editor__entry-header strong {
+  font-family: var(--sans);
+  font-weight: 900;
+  color: var(--bone);
+}
+
+.workout-editor__sets-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.workout-editor__sets {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.workout-editor__sets th {
+  font-family: var(--heading);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--label-red);
+  text-align: left;
+  padding: 4px 6px;
+}
+
+.workout-editor__sets td {
+  padding: 4px 6px;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+
+.workout-editor__sets input {
+  width: 76px;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--lcd-bg);
+  box-shadow: var(--lcd-shadow);
+  color: var(--lcd-glow-color);
+  text-shadow: var(--lcd-glow-shadow);
+}
+
+.workout-editor__filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.workout-editor__filters > * {
+  flex: 1;
+  min-width: 160px;
+
+  @media (max-width: 480px) {
+    min-width: 100%;
+  }
+}
+
+.workout-editor__library-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.workout-editor__library-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  border-radius: 12px;
+}
+
+.workout-editor__library-item strong {
+  font-family: var(--sans);
+  font-weight: 900;
+  color: var(--bone);
+}
+
+.workout-editor__badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.workout-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}

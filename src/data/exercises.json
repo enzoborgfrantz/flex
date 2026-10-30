@@ -1,0 +1,202 @@
+[
+  {
+    "id": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "quads",
+    "secondaryMuscles": ["glutes", "hamstrings", "core"]
+  },
+  {
+    "id": "barbell-deadlift",
+    "name": "Barbell Deadlift",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["glutes", "hamstrings", "forearms"]
+  },
+  {
+    "id": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "chest",
+    "secondaryMuscles": ["shoulders", "triceps"]
+  },
+  {
+    "id": "barbell-overhead-press",
+    "name": "Barbell Overhead Press",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "shoulders",
+    "secondaryMuscles": ["triceps", "core"]
+  },
+  {
+    "id": "barbell-bent-over-row",
+    "name": "Barbell Bent-Over Row",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["biceps", "shoulders"]
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-Up",
+    "category": "compound",
+    "equipment": ["bodyweight"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["biceps", "forearms"]
+  },
+  {
+    "id": "dip",
+    "name": "Dip",
+    "category": "compound",
+    "equipment": ["bodyweight"],
+    "targetMuscle": "chest",
+    "secondaryMuscles": ["triceps", "shoulders"]
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "category": "compound",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "chest",
+    "secondaryMuscles": ["shoulders", "triceps"]
+  },
+  {
+    "id": "dumbbell-shoulder-press",
+    "name": "Dumbbell Shoulder Press",
+    "category": "compound",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "shoulders",
+    "secondaryMuscles": ["triceps"]
+  },
+  {
+    "id": "dumbbell-romanian-deadlift",
+    "name": "Dumbbell Romanian Deadlift",
+    "category": "compound",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "hamstrings",
+    "secondaryMuscles": ["glutes", "back"]
+  },
+  {
+    "id": "dumbbell-lunge",
+    "name": "Dumbbell Lunge",
+    "category": "compound",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "quads",
+    "secondaryMuscles": ["glutes", "hamstrings"]
+  },
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "category": "compound",
+    "equipment": ["machine"],
+    "targetMuscle": "quads",
+    "secondaryMuscles": ["glutes", "hamstrings"]
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "category": "compound",
+    "equipment": ["cable", "machine"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["biceps"]
+  },
+  {
+    "id": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "category": "compound",
+    "equipment": ["cable"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["biceps", "shoulders"]
+  },
+  {
+    "id": "leg-curl",
+    "name": "Leg Curl",
+    "category": "isolation",
+    "equipment": ["machine"],
+    "targetMuscle": "hamstrings",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "leg-extension",
+    "name": "Leg Extension",
+    "category": "isolation",
+    "equipment": ["machine"],
+    "targetMuscle": "quads",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "standing-calf-raise",
+    "name": "Standing Calf Raise",
+    "category": "isolation",
+    "equipment": ["machine", "bodyweight"],
+    "targetMuscle": "calves",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "dumbbell-bicep-curl",
+    "name": "Dumbbell Bicep Curl",
+    "category": "isolation",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "biceps",
+    "secondaryMuscles": ["forearms"]
+  },
+  {
+    "id": "cable-tricep-pushdown",
+    "name": "Cable Tricep Pushdown",
+    "category": "isolation",
+    "equipment": ["cable"],
+    "targetMuscle": "triceps",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "category": "isolation",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "shoulders",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "face-pull",
+    "name": "Cable Face Pull",
+    "category": "isolation",
+    "equipment": ["cable"],
+    "targetMuscle": "shoulders",
+    "secondaryMuscles": ["back"]
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "category": "isolation",
+    "equipment": ["bodyweight"],
+    "targetMuscle": "core",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "hanging-leg-raise",
+    "name": "Hanging Leg Raise",
+    "category": "isolation",
+    "equipment": ["bodyweight"],
+    "targetMuscle": "core",
+    "secondaryMuscles": ["forearms"]
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "category": "compound",
+    "equipment": ["kettlebell"],
+    "targetMuscle": "glutes",
+    "secondaryMuscles": ["hamstrings", "core"]
+  },
+  {
+    "id": "goblet-squat",
+    "name": "Goblet Squat",
+    "category": "compound",
+    "equipment": ["kettlebell", "dumbbell"],
+    "targetMuscle": "quads",
+    "secondaryMuscles": ["glutes", "core"]
+  }
+]

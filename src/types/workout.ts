@@ -5,6 +5,7 @@ export interface SetEntry {
 
 export interface ExerciseEntry {
   id: string
+  exerciseId: string
   name: string
   sets: SetEntry[]
 }
@@ -14,4 +15,5 @@ export interface WorkoutSession {
   date: string
   exercises: ExerciseEntry[]
   notes?: string
+  updatedAt: number
 }

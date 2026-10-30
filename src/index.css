@@ -1,23 +1,106 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* FLEX — Biomech Chrome: dark industrial gym-equipment theme. Maroon gel
+     for action, gunmetal chrome for hardware, red phosphor for every number. */
+  --void: #0a0909;
+  --bg-glow:
+    radial-gradient(ellipse at 85% 10%, rgba(174, 4, 4, 0.28) 0%, transparent 45%),
+    radial-gradient(ellipse at 10% 100%, rgba(90, 92, 100, 0.12) 0%, transparent 40%);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --bone: #e9e4dc;
+  --text: #b8b2bc;
+  --text-h: #e9e4dc;
+  --muted: #a9a4ae;
+  --label-red: #e0504a;
+  --phosphor: #ff3b3b;
+
+  --bg: var(--void);
+  --border: rgba(255, 255, 255, 0.08);
+  --code-bg: #17151a;
+  --accent: var(--phosphor);
+  --accent-bg: rgba(255, 59, 59, 0.12);
+  --accent-border: rgba(255, 59, 59, 0.4);
+  --social-bg: rgba(23, 21, 26, 0.6);
+  --shadow:
+    rgba(0, 0, 0, 0.5) 0 10px 20px -4px, rgba(0, 0, 0, 0.35) 0 4px 8px -2px;
+
+  --surface: radial-gradient(ellipse at 20% 0%, #2a2730 0%, #141217 55%, #0c0b0e 100%);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --surface-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 40px rgba(0, 0, 0, 0.6);
+
+  /* Chrome: brushed gunmetal, for secondary hardware (buttons, housings). */
+  --chrome-gradient: linear-gradient(180deg, #7a7e87 0%, #454850 42%, #2a2c31 58%, #4d5058 100%);
+  --chrome-gradient-hover: linear-gradient(180deg, #878b94 0%, #52555d 42%, #34363c 58%, #595c64 100%);
+  --chrome-gradient-active: linear-gradient(180deg, #4d5058 0%, #2a2c31 40%, #454850 70%, #7a7e87 100%);
+  --chrome-border: #0b0b0d;
+  --chrome-border-light: rgba(255, 255, 255, 0.4);
+  --chrome-text: #eceae6;
+  --chrome-text-shadow-btn: 0 1px 0 rgba(255, 255, 255, 0.25), 0 -1px 1px rgba(0, 0, 0, 0.5);
+  --chrome-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 3px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--chrome-border), 0 4px 10px rgba(0, 0, 0, 0.7);
+  --chrome-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 3px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--chrome-border), 0 6px 14px rgba(0, 0, 0, 0.75);
+
+  /* Deep chrome: housings that never sit behind text. */
+  --chrome-deep-gradient: linear-gradient(
+    180deg,
+    #9a9ea6 0%,
+    #55585f 18%,
+    #2b2d32 46%,
+    #0f1012 52%,
+    #2f3237 74%,
+    #6a6e76 100%
+  );
+  --chrome-deep-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    0 0 0 1px #050506, 0 8px 20px rgba(0, 0, 0, 0.8);
+
+  /* Gel: glossy maroon, for the one primary action per view. */
+  --chrome-gradient-red: radial-gradient(ellipse at 30% 18%, #e0443d 0%, #ae0404 30%, #7d0303 66%, #3f0101 100%);
+  --chrome-gradient-red-hover: radial-gradient(ellipse at 30% 18%, #ea544d 0%, #c01010 30%, #8d0a0a 66%, #4a0505 100%);
+  --chrome-gradient-red-active: radial-gradient(ellipse at 30% 55%, #7d0303 0%, #3f0101 55%, #ae0404 100%);
+  --chrome-border-red: #3f0101;
+  --chrome-border-red-light: rgba(255, 210, 200, 0.5);
+  --chrome-text-red: #fff5f2;
+  --chrome-text-shadow-red-btn: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.15);
+  --chrome-shadow-red: inset 0 2px 1px rgba(255, 220, 215, 0.45), inset 0 -8px 14px rgba(0, 0, 0, 0.55),
+    0 6px 16px rgba(0, 0, 0, 0.7);
+  --chrome-shadow-red-hover: inset 0 2px 1px rgba(255, 220, 215, 0.5), inset 0 -8px 14px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.75), 0 0 24px rgba(200, 30, 30, 0.4);
+
+  /* Ivory: glossy cream enamel, for brand sign-in actions (Google, etc). */
+  --chrome-gradient-ivory: radial-gradient(ellipse at 30% 18%, #fffdf7 0%, #f6efdf 30%, #e6dac0 66%, #cfc0a0 100%);
+  --chrome-gradient-ivory-hover: radial-gradient(ellipse at 30% 18%, #ffffff 0%, #fbf4e6 30%, #ecdfc7 66%, #d7c8a8 100%);
+  --chrome-gradient-ivory-active: radial-gradient(ellipse at 30% 55%, #e6dac0 0%, #cfc0a0 55%, #f6efdf 100%);
+  --chrome-border-ivory: #cfc0a0;
+  --chrome-text-ivory: #7a1414;
+  --chrome-text-shadow-ivory-btn: 0 1px 0 rgba(255, 255, 255, 0.7), 0 1px 2px rgba(122, 20, 20, 0.3);
+  --chrome-shadow-ivory: inset 0 2px 1px rgba(255, 255, 255, 0.9), inset 0 -8px 14px rgba(110, 90, 60, 0.28),
+    0 6px 16px rgba(0, 0, 0, 0.5);
+  --chrome-shadow-ivory-hover: inset 0 2px 1px rgba(255, 255, 255, 0.95), inset 0 -8px 14px rgba(110, 90, 60, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.55), 0 0 20px rgba(255, 240, 210, 0.35);
+
+  /* LCD: recessed red-phosphor readout well, for numbers only. */
+  --lcd-bg: repeating-linear-gradient(180deg, rgba(255, 40, 30, 0.06) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 0%, #2a0505 0%, #0c0202 72%);
+  --lcd-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 50, 40, 0.22),
+    inset 0 0 30px rgba(174, 4, 4, 0.18);
+  --lcd-glow-color: var(--phosphor);
+  --lcd-glow-shadow: 0 0 10px rgba(255, 40, 30, 0.65), 0 0 2px rgba(255, 140, 130, 0.9);
+
+  /* Recess: plain black inset well, for status pills. */
+  --recess-bg: #0a0303;
+  --recess-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+
+  /* Metallic gradient for the outline-style secondary surfaces. */
+  --metal-outline-gradient: var(--chrome-gradient);
+  --metal-outline-text-shadow: var(--chrome-text-shadow-btn);
+
+  --sans: 'Archivo', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: 'Michroma', sans-serif;
+  --mono: 'Orbitron', ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -30,20 +113,10 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 #root {
@@ -51,41 +124,45 @@
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  overflow-x: hidden;
+  background: var(--bg-glow), var(--void);
 }
 
 h1,
 h2 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-h);
+  text-transform: uppercase;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
+  font-size: 40px;
+  letter-spacing: 3px;
   margin: 32px 0;
+  background: -webkit-linear-gradient(#9E9E9E, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 3px rgb(187 187 187 / 45%), 0 2px 0 rgba(0, 0, 0, 0.9);
   @media (max-width: 1024px) {
-    font-size: 36px;
+    font-size: 28px;
+    letter-spacing: 2px;
     margin: 20px 0;
   }
 }
 h2 {
-  font-size: 24px;
+  font-size: 11px;
   line-height: 118%;
-  letter-spacing: -0.24px;
+  letter-spacing: 3px;
+  color: var(--label-red);
   margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
 }
 p {
   margin: 0;
@@ -104,4 +181,9 @@ button {
   &:hover {
     box-shadow: var(--shadow);
   }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
