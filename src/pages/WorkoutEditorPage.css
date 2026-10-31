@@ -6,19 +6,24 @@
   max-width: 760px;
 }
 
-.workout-editor__row {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+.workout-editor h2 {
+  margin-bottom: 16px;
 }
 
-.workout-editor__row > * {
-  flex: 1;
-  min-width: 180px;
+.workout-editor__date-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  max-width: 320px;
+}
 
-  @media (max-width: 480px) {
-    min-width: 100%;
-  }
+.workout-editor__date-field label {
+  white-space: nowrap;
+}
+
+.workout-editor__date-field input {
+  width: auto;
+  flex: 1;
 }
 
 .workout-editor__entries {
@@ -50,36 +55,80 @@
   color: var(--bone);
 }
 
+.workout-editor__icon-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  font-family: var(--heading);
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+/* Deletes the whole exercise card — bold and unmistakable. */
+.workout-editor__icon-btn--exercise {
+  font-size: 16px;
+  color: var(--label-red);
+}
+
+.workout-editor__icon-btn--exercise:hover {
+  color: #ff6b5e;
+}
+
+/* Removes a single set — deliberately quieter so it doesn't read as the
+   same action as the exercise delete above it. */
+.workout-editor__icon-btn--set {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.workout-editor__icon-btn--set:hover {
+  color: var(--label-red);
+}
+
 .workout-editor__sets-wrap {
   width: 100%;
   overflow-x: auto;
 }
 
 .workout-editor__sets {
-  width: 100%;
+  /* Auto width keeps columns hugging their content instead of the browser
+     dumping all leftover space into the empty trailing (remove-button)
+     header cell — that's what was scattering columns across the card. */
+  width: auto;
+  max-width: 100%;
   border-collapse: collapse;
   margin-bottom: 8px;
 }
 
 .workout-editor__sets th {
   font-family: var(--heading);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 400;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--label-red);
   text-align: left;
-  padding: 4px 6px;
+  padding: 4px 8px;
+  white-space: nowrap;
 }
 
 .workout-editor__sets td {
-  padding: 4px 6px;
+  padding: 4px 8px;
   font-family: var(--mono);
   color: var(--muted);
 }
 
+/* Give the remove button its own breathing room so it doesn't read as
+   glued to the weight field next to it. */
+.workout-editor__sets th:last-child,
+.workout-editor__sets td:last-child {
+  padding-left: 20px;
+}
+
 .workout-editor__sets input {
-  width: 76px;
+  width: 64px;
   font: inherit;
   font-family: var(--mono);
   font-size: 15px;
@@ -93,11 +142,39 @@
   text-shadow: var(--lcd-glow-shadow);
 }
 
+@media (max-width: 480px) {
+  .workout-editor__sets input {
+    width: 54px;
+    padding: 8px;
+  }
+
+  .workout-editor__sets th,
+  .workout-editor__sets td {
+    padding: 4px 6px;
+  }
+
+  .workout-editor__sets th:last-child,
+  .workout-editor__sets td:last-child {
+    padding-left: 14px;
+  }
+}
+
+.workout-editor__divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
 .workout-editor__filters {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  margin-top: 16px;
   margin-bottom: 14px;
+}
+
+.workout-editor__filters label {
+  font-size: 11px;
 }
 
 .workout-editor__filters > * {
@@ -109,27 +186,121 @@
   }
 }
 
+.workout-editor__muscle-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  /* Bleed past the card's own padding so the scroller spans its full
+     width; matching left/right padding keeps chips aligned with the
+     rest of the card's content while still letting scroll reach the
+     true edges. */
+  margin: 0 -16px 14px;
+  padding: 0 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+.workout-editor__muscle-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.workout-editor__muscle-chip {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.workout-editor__muscle-chip:hover {
+  color: var(--bone);
+}
+
+.workout-editor__muscle-chip--active {
+  background: var(--label-red);
+  color: var(--bone);
+  box-shadow: none;
+}
+
+.workout-editor__library-list-wrap {
+  position: relative;
+}
+
 .workout-editor__library-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  /* Bleed past the card's right padding so item rows extend toward the
+     true edge instead of stopping well short of it. */
+  margin: 0 -16px 0 0;
+  padding: 0 16px 0 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-height: 320px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.workout-editor__library-list::-webkit-scrollbar {
+  display: none;
+}
+
+.workout-editor__library-fade {
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  bottom: -16px;
+  height: 48px;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(to bottom, transparent, var(--surface) 85%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  mask-image: linear-gradient(to bottom, transparent, black 60%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 60%);
+  transition: opacity 0.2s ease;
+}
+
+.workout-editor__library-fade--visible {
+  opacity: 1;
 }
 
 .workout-editor__library-item {
   display: flex;
-  flex-wrap: wrap;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
   background: var(--recess-bg);
   box-shadow: var(--recess-shadow);
+  border: 0;
   border-radius: 12px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.workout-editor__library-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.workout-editor__library-item:active {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .workout-editor__library-item strong {
@@ -138,11 +309,12 @@
   color: var(--bone);
 }
 
-.workout-editor__badges {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 4px;
+.workout-editor__library-add {
+  flex-shrink: 0;
+  font-family: var(--heading);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--label-red);
 }
 
 .workout-editor__actions {
@@ -150,4 +322,14 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .workout-editor__actions {
+    flex-wrap: nowrap;
+  }
+
+  .workout-editor__actions > * {
+    flex: 1;
+  }
 }

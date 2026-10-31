@@ -2,7 +2,7 @@ import { useId, type InputHTMLAttributes } from 'react'
 import './ui.css'
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
-  label: string
+  label?: string
 }
 
 export function TextField({ label, id, className, ...rest }: TextFieldProps) {
@@ -11,7 +11,7 @@ export function TextField({ label, id, className, ...rest }: TextFieldProps) {
 
   return (
     <div className={['ui-field', className].filter(Boolean).join(' ')}>
-      <label htmlFor={fieldId}>{label}</label>
+      {label && <label htmlFor={fieldId}>{label}</label>}
       <input id={fieldId} {...rest} />
     </div>
   )

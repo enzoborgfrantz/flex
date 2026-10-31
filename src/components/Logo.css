@@ -8,9 +8,17 @@
   background: none;
   border: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
 
   &:hover {
     box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(224, 68, 61, 0.8);
+    outline-offset: 4px;
   }
 
   &::before {

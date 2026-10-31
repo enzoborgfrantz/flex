@@ -14,7 +14,10 @@
   border: 0;
   border-radius: 12px;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.05s ease, background 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.05s ease,
+    background 0.15s ease;
 }
 
 .ui-button:disabled {
@@ -86,7 +89,13 @@
 .ui-button--danger {
   color: var(--chrome-text-red);
   text-shadow: var(--chrome-text-shadow-red-btn);
-  background: linear-gradient(180deg, #8a8d94 0%, #5c0202 12%, #3f0101 75%, #650202 100%);
+  background: linear-gradient(
+    180deg,
+    #8a8d94 0%,
+    #5c0202 12%,
+    #3f0101 75%,
+    #650202 100%
+  );
   box-shadow: var(--chrome-shadow-red);
 }
 
@@ -106,19 +115,23 @@
 .ui-card {
   background: var(--surface);
   border: 1px solid var(--surface-border);
-  border-radius: 22px;
-  padding: 22px;
+  border-radius: 8px;
+  padding: 16px;
   text-align: left;
   box-shadow: var(--surface-shadow);
 }
 
 .ui-card--interactive {
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
 }
 
 .ui-card--interactive:hover {
-  box-shadow: var(--surface-shadow), 0 0 0 1px rgba(255, 59, 59, 0.3);
+  box-shadow:
+    var(--surface-shadow),
+    0 0 0 1px rgba(255, 59, 59, 0.3);
   transform: translateY(-1px);
 }
 
@@ -155,7 +168,7 @@
   color: var(--bone);
 }
 
-.ui-field input[type='number'] {
+.ui-field input[type="number"] {
   font-family: var(--mono);
   font-size: 18px;
   font-variant-numeric: tabular-nums;
@@ -181,17 +194,15 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 1px;
-  padding: 4px 11px;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: var(--chrome-gradient-red);
-  color: var(--chrome-text-red);
-  text-shadow: var(--chrome-text-shadow-red-btn);
-  box-shadow: var(--chrome-shadow-red);
+  background: transparent;
+  color: #ff6b5e;
+  border: 1px solid rgba(255, 70, 60, 0.5);
 }
 
 .ui-badge--neutral {
-  background: var(--chrome-gradient);
-  color: var(--chrome-text);
-  text-shadow: var(--chrome-text-shadow-btn);
-  box-shadow: var(--chrome-shadow);
+  background: transparent;
+  color: #9a9ea6;
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }

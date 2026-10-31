@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
-import { Badge, Button, Card, Select, TextField } from '../components/ui'
-import { equipmentTypes, muscleGroups, searchExercises } from '../data/exercises'
-import type { Equipment, Exercise, MuscleGroup } from '../types/exercise'
-import type { ExerciseEntry, WorkoutSession } from '../types/workout'
-import './WorkoutEditorPage.css'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Card, TextField } from "../components/ui";
+import { muscleGroups, searchExercises } from "../data/exercises";
+import type { Exercise, MuscleGroup } from "../types/exercise";
+import type { ExerciseEntry, WorkoutSession } from "../types/workout";
+import "./WorkoutEditorPage.css";
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toISOString().slice(0, 10);
 }
 
 function createEntry(exercise: Exercise): ExerciseEntry {
@@ -15,104 +15,227 @@ function createEntry(exercise: Exercise): ExerciseEntry {
     exerciseId: exercise.id,
     name: exercise.name,
     sets: [{ reps: 8, weightKg: 0 }],
-  }
+  };
 }
 
 interface WorkoutEditorPageProps {
-  initialSession?: WorkoutSession
-  onSave: (session: WorkoutSession) => void
-  onCancel: () => void
+  initialSession?: WorkoutSession;
+  onSave: (session: WorkoutSession) => void;
+  onCancel: () => void;
 }
 
-export function WorkoutEditorPage({ initialSession, onSave, onCancel }: WorkoutEditorPageProps) {
-  const [date, setDate] = useState(initialSession?.date ?? todayIso())
-  const [notes, setNotes] = useState(initialSession?.notes ?? '')
-  const [entries, setEntries] = useState<ExerciseEntry[]>(initialSession?.exercises ?? [])
+export function WorkoutEditorPage({
+  initialSession,
+  onSave,
+  onCancel,
+}: WorkoutEditorPageProps) {
+  const [date, setDate] = useState(initialSession?.date ?? todayIso());
+  const [entries, setEntries] = useState<ExerciseEntry[]>(
+    initialSession?.exercises ?? [],
+  );
 
-  const [query, setQuery] = useState('')
-  const [muscle, setMuscle] = useState<MuscleGroup | 'all'>('all')
-  const [equipment, setEquipment] = useState<Equipment | 'all'>('all')
+  const [query, setQuery] = useState("");
+  const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | "all">(
+    "all",
+  );
 
-  const matches = useMemo(() => searchExercises({ query, muscle, equipment }), [query, muscle, equipment])
+  const matches = useMemo(
+    () => searchExercises({ query, muscle: selectedMuscle, equipment: "all" }),
+    [query, selectedMuscle],
+  );
+
+  const libraryListRef = useRef<HTMLUListElement>(null);
+  const [showScrollFade, setShowScrollFade] = useState(false);
+
+  useEffect(() => {
+    const list = libraryListRef.current;
+    if (!list) return;
+
+    const updateFade = () => {
+      const hasMore =
+        list.scrollHeight - list.scrollTop - list.clientHeight > 1;
+      setShowScrollFade(hasMore);
+    };
+
+    updateFade();
+    list.addEventListener("scroll", updateFade);
+    window.addEventListener("resize", updateFade);
+    return () => {
+      list.removeEventListener("scroll", updateFade);
+      window.removeEventListener("resize", updateFade);
+    };
+  }, [matches]);
 
   const addExercise = (exercise: Exercise) => {
-    setEntries((current) => [...current, createEntry(exercise)])
-  }
+    setEntries((current) => [...current, createEntry(exercise)]);
+  };
 
   const removeExercise = (entryId: string) => {
-    setEntries((current) => current.filter((entry) => entry.id !== entryId))
-  }
+    setEntries((current) => current.filter((entry) => entry.id !== entryId));
+  };
 
   const addSet = (entryId: string) => {
     setEntries((current) =>
       current.map((entry) =>
-        entry.id === entryId ? { ...entry, sets: [...entry.sets, { reps: 8, weightKg: 0 }] } : entry,
+        entry.id === entryId
+          ? { ...entry, sets: [...entry.sets, { reps: 8, weightKg: 0 }] }
+          : entry,
       ),
-    )
-  }
+    );
+  };
 
   const removeSet = (entryId: string, setIndex: number) => {
-    setEntries((current) =>
-      current.map((entry) =>
-        entry.id === entryId ? { ...entry, sets: entry.sets.filter((_, index) => index !== setIndex) } : entry,
-      ),
-    )
-  }
-
-  const updateSet = (entryId: string, setIndex: number, field: 'reps' | 'weightKg', value: number) => {
     setEntries((current) =>
       current.map((entry) =>
         entry.id === entryId
           ? {
               ...entry,
-              sets: entry.sets.map((set, index) => (index === setIndex ? { ...set, [field]: value } : set)),
+              sets: entry.sets.filter((_, index) => index !== setIndex),
             }
           : entry,
       ),
-    )
-  }
+    );
+  };
 
-  const canSave = entries.length > 0 && entries.every((entry) => entry.sets.length > 0)
+  const updateSet = (
+    entryId: string,
+    setIndex: number,
+    field: "reps" | "weightKg",
+    value: number,
+  ) => {
+    setEntries((current) =>
+      current.map((entry) =>
+        entry.id === entryId
+          ? {
+              ...entry,
+              sets: entry.sets.map((set, index) =>
+                index === setIndex ? { ...set, [field]: value } : set,
+              ),
+            }
+          : entry,
+      ),
+    );
+  };
+
+  const canSave =
+    entries.length > 0 && entries.every((entry) => entry.sets.length > 0);
 
   const handleSave = () => {
     const session: WorkoutSession = {
       id: initialSession?.id ?? crypto.randomUUID(),
       date,
-      notes: notes.trim() || undefined,
       exercises: entries,
       updatedAt: Date.now(),
-    }
-    onSave(session)
-  }
+    };
+    onSave(session);
+  };
 
   return (
     <div className="workout-editor">
-      <Card className="workout-editor__details">
-        <h2>Workout details</h2>
-        <div className="workout-editor__row">
-          <TextField label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <h1
+        style={{
+          margin: "0",
+          textAlign: "left",
+        }}
+      >
+        Workout
+      </h1>
+      <Card className="workout-editor__exercises">
+        <TextField
+          label="Date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="workout-editor__date-field"
+        />
+        <br />
+        <h2>Exercises</h2>
+        <div className="workout-editor__filters">
           <TextField
-            label="Notes"
-            placeholder="How did it feel?"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            aria-label="Exercise library"
+            placeholder="Search, e.g. squat"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-      </Card>
+        <div
+          className="workout-editor__muscle-chips"
+          role="group"
+          aria-label="Filter by target muscle"
+        >
+          <button
+            type="button"
+            className={`workout-editor__muscle-chip${
+              selectedMuscle === "all"
+                ? " workout-editor__muscle-chip--active"
+                : ""
+            }`}
+            onClick={() => setSelectedMuscle("all")}
+          >
+            All
+          </button>
+          {muscleGroups.map((muscle) => (
+            <button
+              key={muscle}
+              type="button"
+              className={`workout-editor__muscle-chip${
+                selectedMuscle === muscle
+                  ? " workout-editor__muscle-chip--active"
+                  : ""
+              }`}
+              onClick={() => setSelectedMuscle(muscle)}
+            >
+              {muscle.charAt(0).toUpperCase() + muscle.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="workout-editor__library-list-wrap">
+          <ul className="workout-editor__library-list" ref={libraryListRef}>
+            {matches.map((exercise) => (
+              <li key={exercise.id}>
+                <button
+                  type="button"
+                  className="workout-editor__library-item"
+                  onClick={() => addExercise(exercise)}
+                >
+                  <strong>{exercise.name}</strong>
+                  <span
+                    className="workout-editor__library-add"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </button>
+              </li>
+            ))}
+            {matches.length === 0 && <p>No exercises match those filters.</p>}
+          </ul>
+          <div
+            className={`workout-editor__library-fade${
+              showScrollFade ? " workout-editor__library-fade--visible" : ""
+            }`}
+            aria-hidden="true"
+          />
+        </div>
 
-      <Card className="workout-editor__added">
-        <h2>Exercises in this workout</h2>
+        <hr className="workout-editor__divider" />
+
         {entries.length === 0 ? (
-          <p>No exercises added yet — pick some from the library below.</p>
+          <p>No exercises added yet.</p>
         ) : (
           <ul className="workout-editor__entries">
             {entries.map((entry) => (
               <li key={entry.id} className="workout-editor__entry">
                 <div className="workout-editor__entry-header">
                   <strong>{entry.name}</strong>
-                  <Button variant="secondary" size="sm" onClick={() => removeExercise(entry.id)}>
-                    Remove
-                  </Button>
+                  <button
+                    type="button"
+                    className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
+                    onClick={() => removeExercise(entry.id)}
+                    aria-label="Remove exercise"
+                  >
+                    ✕
+                  </button>
                 </div>
                 <div className="workout-editor__sets-wrap">
                   <table className="workout-editor__sets">
@@ -133,7 +256,14 @@ export function WorkoutEditorPage({ initialSession, onSave, onCancel }: WorkoutE
                               type="number"
                               min={0}
                               value={set.reps}
-                              onChange={(e) => updateSet(entry.id, setIndex, 'reps', Number(e.target.value))}
+                              onChange={(e) =>
+                                updateSet(
+                                  entry.id,
+                                  setIndex,
+                                  "reps",
+                                  Number(e.target.value),
+                                )
+                              }
                             />
                           </td>
                           <td>
@@ -142,66 +272,42 @@ export function WorkoutEditorPage({ initialSession, onSave, onCancel }: WorkoutE
                               min={0}
                               step={0.5}
                               value={set.weightKg}
-                              onChange={(e) => updateSet(entry.id, setIndex, 'weightKg', Number(e.target.value))}
+                              onChange={(e) =>
+                                updateSet(
+                                  entry.id,
+                                  setIndex,
+                                  "weightKg",
+                                  Number(e.target.value),
+                                )
+                              }
                             />
                           </td>
                           <td>
-                            <Button variant="secondary" size="sm" onClick={() => removeSet(entry.id, setIndex)}>
+                            <button
+                              type="button"
+                              className="workout-editor__icon-btn workout-editor__icon-btn--set"
+                              onClick={() => removeSet(entry.id, setIndex)}
+                              aria-label="Remove set"
+                            >
                               ✕
-                            </Button>
+                            </button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => addSet(entry.id)}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => addSet(entry.id)}
+                >
                   + Add set
                 </Button>
               </li>
             ))}
           </ul>
         )}
-      </Card>
-
-      <Card className="workout-editor__library">
-        <h2>Exercise library</h2>
-        <div className="workout-editor__filters">
-          <TextField label="Search" placeholder="e.g. squat" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Select
-            label="Muscle group"
-            value={muscle}
-            onChange={(e) => setMuscle(e.target.value as MuscleGroup | 'all')}
-            options={[{ value: 'all', label: 'All' }, ...muscleGroups.map((m) => ({ value: m, label: m }))]}
-          />
-          <Select
-            label="Equipment"
-            value={equipment}
-            onChange={(e) => setEquipment(e.target.value as Equipment | 'all')}
-            options={[{ value: 'all', label: 'All' }, ...equipmentTypes.map((eq) => ({ value: eq, label: eq }))]}
-          />
-        </div>
-        <ul className="workout-editor__library-list">
-          {matches.map((exercise) => (
-            <li key={exercise.id} className="workout-editor__library-item">
-              <div>
-                <strong>{exercise.name}</strong>
-                <div className="workout-editor__badges">
-                  <Badge>{exercise.targetMuscle}</Badge>
-                  {exercise.equipment.map((eq) => (
-                    <Badge key={eq} tone="neutral">
-                      {eq}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <Button size="sm" onClick={() => addExercise(exercise)}>
-                Add
-              </Button>
-            </li>
-          ))}
-          {matches.length === 0 && <p>No exercises match those filters.</p>}
-        </ul>
       </Card>
 
       <div className="workout-editor__actions">
@@ -213,5 +319,5 @@ export function WorkoutEditorPage({ initialSession, onSave, onCancel }: WorkoutE
         </Button>
       </div>
     </div>
-  )
+  );
 }
