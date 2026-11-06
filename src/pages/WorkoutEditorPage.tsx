@@ -1,36 +1,56 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, TextField } from "../components/ui";
 import { muscleGroups, searchExercises } from "../data/exercises";
+import {
+  entriesFromTemplate,
+  findLastEntry,
+  formatEntry,
+  formatTarget,
+  isReadyToIncrease,
+  templateExercisesFromEntries,
+} from "../plans/plans";
 import { useTemplates } from "../sync/useTemplates";
 import type { Exercise, MuscleGroup } from "../types/exercise";
 import type {
   ExerciseEntry,
+  ExerciseTarget,
+  TemplateExercise,
   WorkoutSession,
   WorkoutTemplate,
 } from "../types/workout";
 import "./WorkoutEditorPage.css";
 
+const DEFAULT_TARGET: ExerciseTarget = { sets: 3, repsMin: 8, repsMax: 12 };
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function createEntry(exercise: Exercise): ExerciseEntry {
+// A manually added exercise starts from its most recent logged set, if any.
+function createEntry(exercise: Exercise, last?: ExerciseEntry): ExerciseEntry {
+  const lastSet = last?.sets.at(-1);
   return {
     id: crypto.randomUUID(),
     exerciseId: exercise.id,
     name: exercise.name,
-    sets: [{ reps: 8, weightKg: 0 }],
+    sets: [
+      { reps: lastSet?.reps ?? 8, weightKg: lastSet?.weightKg ?? 0, done: false },
+    ],
   };
 }
 
+type PlanDraftExercise = TemplateExercise & { key: string };
+
 interface WorkoutEditorPageProps {
   initialSession?: WorkoutSession;
+  history: WorkoutSession[];
   onSave: (session: WorkoutSession) => void;
   onCancel: () => void;
 }
 
 export function WorkoutEditorPage({
   initialSession,
+  history,
   onSave,
   onCancel,
 }: WorkoutEditorPageProps) {
@@ -41,57 +61,90 @@ export function WorkoutEditorPage({
 
   const { templates, saveTemplate, deleteTemplate } = useTemplates();
   const [planName, setPlanName] = useState<string | null>(null);
-  // While editing a plan, the workout in progress is parked here and restored afterwards.
+  // Editing a plan works on targets, kept apart from the workout in progress.
   const [editingPlan, setEditingPlan] = useState<{
-    template: WorkoutTemplate;
-    stashedEntries: ExerciseEntry[];
+    id: string;
+    exercises: PlanDraftExercise[];
   } | null>(null);
 
+  const lastEntryFor = (exerciseId: string) =>
+    findLastEntry(history, exerciseId, date, initialSession?.id);
+
   const loadTemplate = (template: WorkoutTemplate) => {
-    setEntries(
-      template.exercises.map((exercise) => ({
-        id: crypto.randomUUID(),
-        exerciseId: exercise.exerciseId,
-        name: exercise.name,
-        sets: exercise.sets.map((set) => ({ ...set })),
-      })),
-    );
+    setEntries(entriesFromTemplate(template, history, date, initialSession?.id));
   };
 
   const startEditingPlan = (template: WorkoutTemplate) => {
-    setEditingPlan({ template, stashedEntries: entries });
-    loadTemplate(template);
+    setEditingPlan({
+      id: template.id,
+      exercises: template.exercises.map((exercise) => ({
+        ...exercise,
+        target: { ...exercise.target },
+        key: crypto.randomUUID(),
+      })),
+    });
     setPlanName(template.name);
   };
 
   const stopEditingPlan = () => {
-    if (editingPlan) setEntries(editingPlan.stashedEntries);
     setEditingPlan(null);
     setPlanName(null);
+  };
+
+  const updatePlanExercise = (
+    key: string,
+    change: Partial<ExerciseTarget> & { startWeightKg?: number },
+  ) => {
+    setEditingPlan(
+      (current) =>
+        current && {
+          ...current,
+          exercises: current.exercises.map((exercise) =>
+            exercise.key === key
+              ? {
+                  ...exercise,
+                  startWeightKg: change.startWeightKg ?? exercise.startWeightKg,
+                  target: {
+                    sets: change.sets ?? exercise.target.sets,
+                    repsMin: change.repsMin ?? exercise.target.repsMin,
+                    repsMax: change.repsMax ?? exercise.target.repsMax,
+                  },
+                }
+              : exercise,
+          ),
+        },
+    );
   };
 
   const trimmedPlanName = planName?.trim() ?? "";
   const planNameTaken = templates.some(
     (template) =>
       editingPlan &&
-      template.id !== editingPlan.template.id &&
+      template.id !== editingPlan.id &&
       template.name.toLowerCase() === trimmedPlanName.toLowerCase(),
   );
-  const canSavePlan =
-    trimmedPlanName !== "" &&
-    !planNameTaken &&
-    entries.length > 0 &&
-    entries.every((entry) => entry.sets.length > 0);
+  const planContentValid = editingPlan
+    ? editingPlan.exercises.length > 0 &&
+      editingPlan.exercises.every(
+        ({ target }) =>
+          target.sets > 0 && target.repsMin > 0 && target.repsMin <= target.repsMax,
+      )
+    : entries.length > 0 && entries.every((entry) => entry.sets.length > 0);
+  const canSavePlan = trimmedPlanName !== "" && !planNameTaken && planContentValid;
 
   const handleSavePlan = () => {
     if (!canSavePlan) return;
-    saveTemplate(
-      trimmedPlanName,
-      entries.map(({ exerciseId, name, sets }) => ({ exerciseId, name, sets })),
-      editingPlan?.template.id,
-    );
-    if (editingPlan) stopEditingPlan();
-    else setPlanName(null);
+    if (editingPlan) {
+      saveTemplate(
+        trimmedPlanName,
+        editingPlan.exercises.map(({ key: _key, ...exercise }) => exercise),
+        editingPlan.id,
+      );
+      stopEditingPlan();
+    } else {
+      saveTemplate(trimmedPlanName, templateExercisesFromEntries(entries));
+      setPlanName(null);
+    }
   };
 
   const [query, setQuery] = useState("");
@@ -127,20 +180,60 @@ export function WorkoutEditorPage({
   }, [matches]);
 
   const addExercise = (exercise: Exercise) => {
-    setEntries((current) => [...current, createEntry(exercise)]);
+    if (editingPlan) {
+      setEditingPlan({
+        ...editingPlan,
+        exercises: [
+          ...editingPlan.exercises,
+          {
+            key: crypto.randomUUID(),
+            exerciseId: exercise.id,
+            name: exercise.name,
+            target: { ...DEFAULT_TARGET },
+            startWeightKg: 0,
+          },
+        ],
+      });
+      return;
+    }
+    setEntries((current) => [
+      ...current,
+      createEntry(exercise, lastEntryFor(exercise.id)),
+    ]);
   };
 
   const removeExercise = (entryId: string) => {
     setEntries((current) => current.filter((entry) => entry.id !== entryId));
   };
 
+  const removePlanExercise = (key: string) => {
+    setEditingPlan(
+      (current) =>
+        current && {
+          ...current,
+          exercises: current.exercises.filter((exercise) => exercise.key !== key),
+        },
+    );
+  };
+
+  // A new set copies the one before it, unticked.
   const addSet = (entryId: string) => {
     setEntries((current) =>
-      current.map((entry) =>
-        entry.id === entryId
-          ? { ...entry, sets: [...entry.sets, { reps: 8, weightKg: 0 }] }
-          : entry,
-      ),
+      current.map((entry) => {
+        if (entry.id !== entryId) return entry;
+        const previous = entry.sets.at(-1);
+        return {
+          ...entry,
+          sets: [
+            ...entry.sets,
+            {
+              reps: previous?.reps ?? 8,
+              weightKg: previous?.weightKg ?? 0,
+              done: false,
+            },
+          ],
+        };
+      }),
     );
   };
 
@@ -160,8 +253,7 @@ export function WorkoutEditorPage({
   const updateSet = (
     entryId: string,
     setIndex: number,
-    field: "reps" | "weightKg",
-    value: number,
+    change: { reps?: number; weightKg?: number; done?: boolean },
   ) => {
     setEntries((current) =>
       current.map((entry) =>
@@ -169,7 +261,7 @@ export function WorkoutEditorPage({
           ? {
               ...entry,
               sets: entry.sets.map((set, index) =>
-                index === setIndex ? { ...set, [field]: value } : set,
+                index === setIndex ? { ...set, ...change } : set,
               ),
             }
           : entry,
@@ -326,49 +418,70 @@ export function WorkoutEditorPage({
 
         <hr className="workout-editor__divider" />
 
-        {entries.length === 0 ? (
-          <p>No exercises added yet.</p>
-        ) : (
-          <ul className="workout-editor__entries">
-            {entries.map((entry) => (
-              <li key={entry.id} className="workout-editor__entry">
-                <div className="workout-editor__entry-header">
-                  <strong>{entry.name}</strong>
-                  <button
-                    type="button"
-                    className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
-                    onClick={() => removeExercise(entry.id)}
-                    aria-label="Remove exercise"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="workout-editor__sets-wrap">
-                  <table className="workout-editor__sets">
-                    <thead>
-                      <tr>
-                        <th>Set</th>
-                        <th>Reps</th>
-                        <th>Weight (kg)</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {entry.sets.map((set, setIndex) => (
-                        <tr key={setIndex}>
-                          <td>{setIndex + 1}</td>
+        {editingPlan ? (
+          editingPlan.exercises.length === 0 ? (
+            <p>No exercises in this plan yet.</p>
+          ) : (
+            <ul className="workout-editor__entries">
+              {editingPlan.exercises.map((exercise) => (
+                <li key={exercise.key} className="workout-editor__entry">
+                  <div className="workout-editor__entry-header">
+                    <strong>{exercise.name}</strong>
+                    <button
+                      type="button"
+                      className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
+                      onClick={() => removePlanExercise(exercise.key)}
+                      aria-label="Remove exercise"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="workout-editor__sets-wrap">
+                    <table className="workout-editor__sets">
+                      <thead>
+                        <tr>
+                          <th>Sets</th>
+                          <th>Reps</th>
+                          <th>Start (kg)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
                           <td>
                             <input
                               type="number"
-                              min={0}
-                              value={set.reps}
+                              min={1}
+                              aria-label="Target sets"
+                              value={exercise.target.sets}
                               onChange={(e) =>
-                                updateSet(
-                                  entry.id,
-                                  setIndex,
-                                  "reps",
-                                  Number(e.target.value),
-                                )
+                                updatePlanExercise(exercise.key, {
+                                  sets: Number(e.target.value),
+                                })
+                              }
+                            />
+                          </td>
+                          <td className="workout-editor__rep-range">
+                            <input
+                              type="number"
+                              min={1}
+                              aria-label="Minimum reps"
+                              value={exercise.target.repsMin}
+                              onChange={(e) =>
+                                updatePlanExercise(exercise.key, {
+                                  repsMin: Number(e.target.value),
+                                })
+                              }
+                            />
+                            –
+                            <input
+                              type="number"
+                              min={1}
+                              aria-label="Maximum reps"
+                              value={exercise.target.repsMax}
+                              onChange={(e) =>
+                                updatePlanExercise(exercise.key, {
+                                  repsMax: Number(e.target.value),
+                                })
                               }
                             />
                           </td>
@@ -377,41 +490,145 @@ export function WorkoutEditorPage({
                               type="number"
                               min={0}
                               step={0.5}
-                              value={set.weightKg}
+                              aria-label="Starting weight in kg"
+                              value={exercise.startWeightKg}
                               onChange={(e) =>
-                                updateSet(
-                                  entry.id,
-                                  setIndex,
-                                  "weightKg",
-                                  Number(e.target.value),
-                                )
+                                updatePlanExercise(exercise.key, {
+                                  startWeightKg: Number(e.target.value),
+                                })
                               }
                             />
                           </td>
-                          <td>
-                            <button
-                              type="button"
-                              className="workout-editor__icon-btn workout-editor__icon-btn--set"
-                              onClick={() => removeSet(entry.id, setIndex)}
-                              aria-label="Remove set"
-                            >
-                              ✕
-                            </button>
-                          </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => addSet(entry.id)}
-                >
-                  + Add set
-                </Button>
-              </li>
-            ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {exercise.target.repsMin > exercise.target.repsMax && (
+                    <p className="workout-editor__plan-error">
+                      Minimum reps can't be above maximum reps.
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )
+        ) : entries.length === 0 ? (
+          <p>No exercises added yet.</p>
+        ) : (
+          <ul className="workout-editor__entries">
+            {entries.map((entry) => {
+              const last = lastEntryFor(entry.exerciseId);
+              return (
+                <li key={entry.id} className="workout-editor__entry">
+                  <div className="workout-editor__entry-header">
+                    <strong>{entry.name}</strong>
+                    <button
+                      type="button"
+                      className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
+                      onClick={() => removeExercise(entry.id)}
+                      aria-label="Remove exercise"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {(entry.target || last) && (
+                    <div className="workout-editor__entry-meta">
+                      {entry.target && (
+                        <span>Target {formatTarget(entry.target)}</span>
+                      )}
+                      {last && <span>Last: {formatEntry(last)}</span>}
+                    </div>
+                  )}
+                  {entry.target &&
+                    last &&
+                    isReadyToIncrease(last, entry.target.repsMax) && (
+                      <p className="workout-editor__nudge">
+                        ↑ You hit {entry.target.repsMax} on every set last time
+                        — time to go up in weight.
+                      </p>
+                    )}
+                  <div className="workout-editor__sets-wrap">
+                    <table className="workout-editor__sets">
+                      <thead>
+                        <tr>
+                          <th>Set</th>
+                          <th>Reps</th>
+                          <th>Weight (kg)</th>
+                          <th>Done</th>
+                          <th />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {entry.sets.map((set, setIndex) => (
+                          <tr key={setIndex}>
+                            <td>{setIndex + 1}</td>
+                            <td>
+                              <input
+                                type="number"
+                                min={0}
+                                value={set.reps}
+                                onChange={(e) =>
+                                  updateSet(entry.id, setIndex, {
+                                    reps: Number(e.target.value),
+                                  })
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                min={0}
+                                step={0.5}
+                                value={set.weightKg}
+                                onChange={(e) =>
+                                  updateSet(entry.id, setIndex, {
+                                    weightKg: Number(e.target.value),
+                                  })
+                                }
+                              />
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className={`workout-editor__done${
+                                  set.done ? " workout-editor__done--on" : ""
+                                }`}
+                                onClick={() =>
+                                  updateSet(entry.id, setIndex, {
+                                    done: !set.done,
+                                  })
+                                }
+                                aria-pressed={!!set.done}
+                                aria-label={`Set ${setIndex + 1} done`}
+                              >
+                                ✓
+                              </button>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className="workout-editor__icon-btn workout-editor__icon-btn--set"
+                                onClick={() => removeSet(entry.id, setIndex)}
+                                aria-label="Remove set"
+                              >
+                                ✕
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => addSet(entry.id)}
+                  >
+                    + Add set
+                  </Button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Card>

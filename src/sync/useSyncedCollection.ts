@@ -19,6 +19,8 @@ export interface SyncedCollectionConfig<T extends Syncable> {
   saveLocal: (items: T[]) => void
   remote: DriveAppDataFile<T>
   sort?: (a: T, b: T) => number
+  // Upgrades items stored in an older shape, whether they come from this device or Drive.
+  normalize?: (item: T) => T
 }
 
 function mergeByLatest<T extends Syncable>(local: T[], remote: T[], sort?: (a: T, b: T) => number): T[] {
@@ -59,9 +61,12 @@ async function syncWithRetry<T>(
 }
 
 export function useSyncedCollection<T extends Syncable>(config: SyncedCollectionConfig<T>) {
-  const { loadLocal, saveLocal, remote, sort } = config
+  const { loadLocal, saveLocal, remote, sort, normalize } = config
   const { accessToken } = useAuth()
-  const [items, setItems] = useState<T[]>(() => loadLocal())
+  const [items, setItems] = useState<T[]>(() => {
+    const local = loadLocal()
+    return normalize ? local.map(normalize) : local
+  })
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(accessToken ? 'idle' : 'offline')
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -98,8 +103,9 @@ export function useSyncedCollection<T extends Syncable>(config: SyncedCollection
       .pull(accessToken)
       .then((remoteItems) => {
         if (!remoteItems) return
+        const upgraded = normalize ? remoteItems.map(normalize) : remoteItems
         setItems((current) => {
-          const merged = mergeByLatest(current, remoteItems, sort)
+          const merged = mergeByLatest(current, upgraded, sort)
           saveLocal(merged)
           return merged
         })
@@ -107,7 +113,7 @@ export function useSyncedCollection<T extends Syncable>(config: SyncedCollection
       .catch(() => {
         // No network / Drive unavailable — keep working off local storage.
       })
-  }, [accessToken, remote, saveLocal, sort])
+  }, [accessToken, remote, saveLocal, sort, normalize])
 
   // Every local change goes through here: persist to this device, then debounce a push to Drive.
   const update = useCallback(

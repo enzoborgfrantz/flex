@@ -146,6 +146,7 @@ export function DashboardPage() {
 
       {view.name === "new" && (
         <WorkoutEditorPage
+          history={sessions}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}
         />
@@ -154,6 +155,7 @@ export function DashboardPage() {
       {view.name === "edit" && (
         <WorkoutEditorPage
           initialSession={view.session}
+          history={sessions}
           onSave={handleSave}
           onCancel={() => setView({ name: "detail", session: view.session })}
         />

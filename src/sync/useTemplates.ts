@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { normalizeTemplate } from '../plans/plans'
 import { loadLocalTemplates, saveLocalTemplates } from '../storage/localTemplateStore'
 import { templatesDriveFile } from './driveAppData'
 import { useSyncedCollection, type SyncedCollectionConfig } from './useSyncedCollection'
@@ -9,6 +10,7 @@ const templatesConfig: SyncedCollectionConfig<WorkoutTemplate> = {
   saveLocal: saveLocalTemplates,
   remote: templatesDriveFile,
   sort: (a, b) => a.name.localeCompare(b.name),
+  normalize: normalizeTemplate,
 }
 
 export function useTemplates() {

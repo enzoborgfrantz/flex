@@ -425,3 +425,62 @@
   font-size: 12px;
   color: var(--label-red);
 }
+
+.workout-editor__entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: -4px 0 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.workout-editor__nudge {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  font-size: 13px;
+  color: var(--bone);
+}
+
+.workout-editor__rep-range {
+  white-space: nowrap;
+}
+
+.workout-editor__rep-range input + input {
+  margin-left: 4px;
+}
+
+.workout-editor__rep-range input:first-child {
+  margin-right: 4px;
+}
+
+/* Ticking a set off — the hook for starting a rest timer later. */
+.workout-editor__done {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.workout-editor__done:hover {
+  color: var(--bone);
+}
+
+.workout-editor__done--on {
+  background: var(--label-red);
+  box-shadow: none;
+  color: var(--bone);
+}

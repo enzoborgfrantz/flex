@@ -1,6 +1,14 @@
 export interface SetEntry {
   reps: number
   weightKg: number
+  // Ticked off during the session. Sets logged before this existed have no flag.
+  done?: boolean
+}
+
+export interface ExerciseTarget {
+  sets: number
+  repsMin: number
+  repsMax: number
 }
 
 export interface ExerciseEntry {
@@ -8,6 +16,8 @@ export interface ExerciseEntry {
   exerciseId: string
   name: string
   sets: SetEntry[]
+  // Present when the exercise came from a plan.
+  target?: ExerciseTarget
 }
 
 export interface WorkoutSession {
@@ -21,7 +31,9 @@ export interface WorkoutSession {
 export interface TemplateExercise {
   exerciseId: string
   name: string
-  sets: SetEntry[]
+  target: ExerciseTarget
+  // Only used until the exercise has been logged; after that weight follows history.
+  startWeightKg: number
 }
 
 export interface WorkoutTemplate {
