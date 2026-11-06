@@ -17,3 +17,16 @@ export interface WorkoutSession {
   notes?: string
   updatedAt: number
 }
+
+export interface TemplateExercise {
+  exerciseId: string
+  name: string
+  sets: SetEntry[]
+}
+
+export interface WorkoutTemplate {
+  id: string
+  name: string
+  exercises: TemplateExercise[]
+  updatedAt: number
+}

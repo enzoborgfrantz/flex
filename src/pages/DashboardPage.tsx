@@ -1,39 +1,62 @@
-import { useEffect, useRef, useState } from 'react'
-import { useAuth, type AuthUser } from '../auth/AuthContext'
-import { Button, Card } from '../components/ui'
-import { Logo } from '../components/Logo'
-import { useWorkouts, type SyncStatus } from '../sync/useWorkouts'
-import type { WorkoutSession } from '../types/workout'
-import { WorkoutDetailPage } from './WorkoutDetailPage'
-import { WorkoutEditorPage } from './WorkoutEditorPage'
+import { useEffect, useRef, useState } from "react";
+import { useAuth, type AuthUser } from "../auth/AuthContext";
+import { Logo } from "../components/Logo";
+import { Button, Card } from "../components/ui";
+import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
+import type { WorkoutSession } from "../types/workout";
+import { WorkoutDetailPage } from "./WorkoutDetailPage";
+import { WorkoutEditorPage } from "./WorkoutEditorPage";
 
-type View = { name: 'list' } | { name: 'new' } | { name: 'edit'; session: WorkoutSession } | { name: 'detail'; session: WorkoutSession }
+type View =
+  | { name: "list" }
+  | { name: "new" }
+  | { name: "edit"; session: WorkoutSession }
+  | { name: "detail"; session: WorkoutSession };
 
-function SyncBadge({ status, onRetry }: { status: SyncStatus; onRetry: () => void }) {
-  if (status === 'idle') return null
-  if (status === 'syncing') return <span className="sync-badge sync-badge--busy">Syncing…</span>
-  if (status === 'synced') return <span className="sync-badge sync-badge--ok">Synced to Drive</span>
-  if (status === 'error')
+function SyncBadge({
+  status,
+  onRetry,
+}: {
+  status: SyncStatus;
+  onRetry: () => void;
+}) {
+  if (status === "idle") return null;
+  if (status === "syncing")
+    return <span className="sync-badge sync-badge--busy">Syncing…</span>;
+  if (status === "synced")
+    return <span className="sync-badge sync-badge--ok">Synced to Drive</span>;
+  if (status === "error")
     return (
-      <button type="button" className="sync-badge sync-badge--error" onClick={onRetry}>
+      <button
+        type="button"
+        className="sync-badge sync-badge--error"
+        onClick={onRetry}
+      >
         Sync failed — retry
       </button>
-    )
-  return <span className="sync-badge">Saved on this device</span>
+    );
+  return <span className="sync-badge">Saved on this device</span>;
 }
 
-function AccountMenu({ user, onSignOut }: { user: AuthUser | null; onSignOut: () => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+function AccountMenu({
+  user,
+  onSignOut,
+}: {
+  user: AuthUser | null;
+  onSignOut: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [open])
+      if (ref.current && !ref.current.contains(event.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   return (
     <div className="account__menu" ref={ref}>
@@ -45,9 +68,16 @@ function AccountMenu({ user, onSignOut }: { user: AuthUser | null; onSignOut: ()
         aria-expanded={open}
       >
         {user?.picture ? (
-          <img className="account__avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />
+          <img
+            className="account__avatar"
+            src={user.picture}
+            alt=""
+            referrerPolicy="no-referrer"
+          />
         ) : (
-          <span className="account__avatar account__avatar--fallback">{user?.name?.[0] ?? '?'}</span>
+          <span className="account__avatar account__avatar--fallback">
+            {user?.name?.[0] ?? "?"}
+          </span>
         )}
       </button>
       {open && (
@@ -59,34 +89,37 @@ function AccountMenu({ user, onSignOut }: { user: AuthUser | null; onSignOut: ()
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export function DashboardPage() {
-  const { user, signOut } = useAuth()
-  const { sessions, saveWorkout, deleteWorkout, syncStatus, retrySync } = useWorkouts()
-  const [view, setView] = useState<View>({ name: 'list' })
+  const { user, signOut } = useAuth();
+  const { sessions, saveWorkout, deleteWorkout, syncStatus, retrySync } =
+    useWorkouts();
+  const [view, setView] = useState<View>({ name: "list" });
 
   const handleSave = (session: WorkoutSession) => {
-    saveWorkout(session)
-    setView({ name: 'detail', session })
-  }
+    saveWorkout(session);
+    setView({ name: "detail", session });
+  };
 
   return (
     <section id="dashboard">
       <header>
-        <Logo onClick={() => setView({ name: 'list' })} />
+        <Logo onClick={() => setView({ name: "list" })} />
         <div className="account">
           <SyncBadge status={syncStatus} onRetry={retrySync} />
           <AccountMenu user={user} onSignOut={signOut} />
         </div>
       </header>
 
-      {view.name === 'list' && (
+      {view.name === "list" && (
         <>
           <div className="dashboard__toolbar">
-            <h1>Workouts</h1>
-            <Button variant="ivory" onClick={() => setView({ name: 'new' })}>New workout</Button>
+            <h1>Past Workouts</h1>
+            <Button variant="ivory" onClick={() => setView({ name: "new" })}>
+              New workout
+            </Button>
           </div>
           {sessions.length === 0 ? (
             <p>No workout sessions yet — start a new one above.</p>
@@ -94,9 +127,15 @@ export function DashboardPage() {
             <ul className="dashboard__sessions">
               {sessions.map((session) => (
                 <li key={session.id}>
-                  <Card interactive onClick={() => setView({ name: 'detail', session })}>
+                  <Card
+                    interactive
+                    onClick={() => setView({ name: "detail", session })}
+                  >
                     <strong>{session.date}</strong>
-                    <p>{session.exercises.length} exercise{session.exercises.length === 1 ? '' : 's'}</p>
+                    <p>
+                      {session.exercises.length} exercise
+                      {session.exercises.length === 1 ? "" : "s"}
+                    </p>
                   </Card>
                 </li>
               ))}
@@ -105,29 +144,32 @@ export function DashboardPage() {
         </>
       )}
 
-      {view.name === 'new' && (
-        <WorkoutEditorPage onSave={handleSave} onCancel={() => setView({ name: 'list' })} />
+      {view.name === "new" && (
+        <WorkoutEditorPage
+          onSave={handleSave}
+          onCancel={() => setView({ name: "list" })}
+        />
       )}
 
-      {view.name === 'edit' && (
+      {view.name === "edit" && (
         <WorkoutEditorPage
           initialSession={view.session}
           onSave={handleSave}
-          onCancel={() => setView({ name: 'detail', session: view.session })}
+          onCancel={() => setView({ name: "detail", session: view.session })}
         />
       )}
 
-      {view.name === 'detail' && (
+      {view.name === "detail" && (
         <WorkoutDetailPage
           session={view.session}
-          onEdit={() => setView({ name: 'edit', session: view.session })}
+          onEdit={() => setView({ name: "edit", session: view.session })}
           onDelete={() => {
-            deleteWorkout(view.session.id)
-            setView({ name: 'list' })
+            deleteWorkout(view.session.id);
+            setView({ name: "list" });
           }}
-          onBack={() => setView({ name: 'list' })}
+          onBack={() => setView({ name: "list" })}
         />
       )}
     </section>
-  )
+  );
 }

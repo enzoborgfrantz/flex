@@ -35,6 +35,7 @@ export const muscleGroups: MuscleGroup[] = [
   'calves',
   'core',
   'forearms',
+  'neck',
 ]
 
 export const equipmentTypes: Equipment[] = [
@@ -45,4 +46,5 @@ export const equipmentTypes: Equipment[] = [
   'bodyweight',
   'kettlebell',
   'bands',
+  'harness',
 ]

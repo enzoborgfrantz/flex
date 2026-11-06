@@ -10,6 +10,7 @@ export type MuscleGroup =
   | 'calves'
   | 'core'
   | 'forearms'
+  | 'neck'
 
 export type Equipment =
   | 'barbell'
@@ -19,6 +20,7 @@ export type Equipment =
   | 'bodyweight'
   | 'kettlebell'
   | 'bands'
+  | 'harness'
 
 export interface Exercise {
   id: string

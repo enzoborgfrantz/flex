@@ -333,3 +333,95 @@
     flex: 1;
   }
 }
+
+.workout-editor__plans {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.workout-editor__plan {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  border-radius: 12px;
+}
+
+.workout-editor__plan-load {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 6px 10px 14px;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workout-editor__plan-load strong {
+  font-family: var(--sans);
+  font-weight: 900;
+  color: var(--bone);
+}
+
+.workout-editor__plan-load span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.workout-editor__plan-load:hover strong {
+  color: var(--label-red);
+}
+
+/* Sits at the left of the actions row, apart from the session's own Cancel / Save. */
+.workout-editor__save-plan-btn {
+  margin-right: auto;
+}
+
+.workout-editor__save-plan {
+  align-items: center;
+}
+
+.workout-editor__save-plan .ui-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+@media (max-width: 480px) {
+  /* Three buttons don't fit one row on a phone: give "Save as plan" (and
+     the plan name field) a full-width row of their own. */
+  .workout-editor__actions:has(.workout-editor__save-plan-btn),
+  .workout-editor__save-plan {
+    flex-wrap: wrap;
+  }
+
+  .workout-editor__actions > .workout-editor__save-plan-btn,
+  .workout-editor__save-plan > .ui-field {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
+}
+
+.workout-editor__icon-btn--edit {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.workout-editor__icon-btn--edit:hover {
+  color: var(--bone);
+}
+
+.workout-editor__plan-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  color: var(--label-red);
+}

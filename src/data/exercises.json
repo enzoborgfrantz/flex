@@ -198,5 +198,45 @@
     "equipment": ["kettlebell", "dumbbell"],
     "targetMuscle": "quads",
     "secondaryMuscles": ["glutes", "core"]
+  },
+  {
+    "id": "barbell-romanian-deadlift",
+    "name": "Barbell Romanian Deadlift",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "hamstrings",
+    "secondaryMuscles": ["glutes", "back"]
+  },
+  {
+    "id": "barbell-hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "category": "compound",
+    "equipment": ["barbell"],
+    "targetMuscle": "glutes",
+    "secondaryMuscles": ["hamstrings"]
+  },
+  {
+    "id": "incline-dumbbell-press",
+    "name": "Incline Dumbbell Press",
+    "category": "compound",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "chest",
+    "secondaryMuscles": ["shoulders", "triceps"]
+  },
+  {
+    "id": "overhead-dumbbell-tricep-extension",
+    "name": "Overhead Dumbbell Tricep Extension",
+    "category": "isolation",
+    "equipment": ["dumbbell"],
+    "targetMuscle": "triceps",
+    "secondaryMuscles": []
+  },
+  {
+    "id": "harness-neck-extension",
+    "name": "Harness Neck Extension",
+    "category": "isolation",
+    "equipment": ["harness"],
+    "targetMuscle": "neck",
+    "secondaryMuscles": []
   }
 ]

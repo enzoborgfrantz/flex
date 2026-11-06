@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, TextField } from "../components/ui";
 import { muscleGroups, searchExercises } from "../data/exercises";
+import { useTemplates } from "../sync/useTemplates";
 import type { Exercise, MuscleGroup } from "../types/exercise";
-import type { ExerciseEntry, WorkoutSession } from "../types/workout";
+import type {
+  ExerciseEntry,
+  WorkoutSession,
+  WorkoutTemplate,
+} from "../types/workout";
 import "./WorkoutEditorPage.css";
 
 function todayIso(): string {
@@ -33,6 +38,61 @@ export function WorkoutEditorPage({
   const [entries, setEntries] = useState<ExerciseEntry[]>(
     initialSession?.exercises ?? [],
   );
+
+  const { templates, saveTemplate, deleteTemplate } = useTemplates();
+  const [planName, setPlanName] = useState<string | null>(null);
+  // While editing a plan, the workout in progress is parked here and restored afterwards.
+  const [editingPlan, setEditingPlan] = useState<{
+    template: WorkoutTemplate;
+    stashedEntries: ExerciseEntry[];
+  } | null>(null);
+
+  const loadTemplate = (template: WorkoutTemplate) => {
+    setEntries(
+      template.exercises.map((exercise) => ({
+        id: crypto.randomUUID(),
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        sets: exercise.sets.map((set) => ({ ...set })),
+      })),
+    );
+  };
+
+  const startEditingPlan = (template: WorkoutTemplate) => {
+    setEditingPlan({ template, stashedEntries: entries });
+    loadTemplate(template);
+    setPlanName(template.name);
+  };
+
+  const stopEditingPlan = () => {
+    if (editingPlan) setEntries(editingPlan.stashedEntries);
+    setEditingPlan(null);
+    setPlanName(null);
+  };
+
+  const trimmedPlanName = planName?.trim() ?? "";
+  const planNameTaken = templates.some(
+    (template) =>
+      editingPlan &&
+      template.id !== editingPlan.template.id &&
+      template.name.toLowerCase() === trimmedPlanName.toLowerCase(),
+  );
+  const canSavePlan =
+    trimmedPlanName !== "" &&
+    !planNameTaken &&
+    entries.length > 0 &&
+    entries.every((entry) => entry.sets.length > 0);
+
+  const handleSavePlan = () => {
+    if (!canSavePlan) return;
+    saveTemplate(
+      trimmedPlanName,
+      entries.map(({ exerciseId, name, sets }) => ({ exerciseId, name, sets })),
+      editingPlan?.template.id,
+    );
+    if (editingPlan) stopEditingPlan();
+    else setPlanName(null);
+  };
 
   const [query, setQuery] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | "all">(
@@ -138,17 +198,63 @@ export function WorkoutEditorPage({
           textAlign: "left",
         }}
       >
-        Workout
+        {editingPlan ? "Edit plan" : "Workout"}
       </h1>
       <Card className="workout-editor__exercises">
-        <TextField
-          label="Date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="workout-editor__date-field"
-        />
-        <br />
+        {!editingPlan && (
+          <>
+            <TextField
+              label="Date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="workout-editor__date-field"
+            />
+            <br />
+          </>
+        )}
+        {!initialSession && !editingPlan && templates.length > 0 && (
+          <>
+            <h2>Load a plan</h2>
+            <ul className="workout-editor__plans">
+              {templates.map((template) => (
+                <li key={template.id} className="workout-editor__plan">
+                  <button
+                    type="button"
+                    className="workout-editor__plan-load"
+                    onClick={() => loadTemplate(template)}
+                  >
+                    <strong>{template.name}</strong>
+                    <span>
+                      {template.exercises.length} exercise
+                      {template.exercises.length === 1 ? "" : "s"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="workout-editor__icon-btn workout-editor__icon-btn--edit"
+                    onClick={() => startEditingPlan(template)}
+                    aria-label={`Edit plan ${template.name}`}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    className="workout-editor__icon-btn workout-editor__icon-btn--set"
+                    onClick={() => {
+                      if (window.confirm(`Delete plan "${template.name}"?`))
+                        deleteTemplate(template.id);
+                    }}
+                    aria-label={`Delete plan ${template.name}`}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <hr className="workout-editor__divider" />
+          </>
+        )}
         <h2>Exercises</h2>
         <div className="workout-editor__filters">
           <TextField
@@ -310,14 +416,59 @@ export function WorkoutEditorPage({
         )}
       </Card>
 
-      <div className="workout-editor__actions">
-        <Button variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button disabled={!canSave} onClick={handleSave}>
-          Save workout
-        </Button>
-      </div>
+      {planName === null ? (
+        <div className="workout-editor__actions">
+          <Button
+            variant="secondary"
+            className="workout-editor__save-plan-btn"
+            disabled={entries.length === 0}
+            onClick={() => setPlanName("")}
+          >
+            Save as plan
+          </Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button disabled={!canSave} onClick={handleSave}>
+            Save workout
+          </Button>
+        </div>
+      ) : (
+        <form
+          className="workout-editor__actions workout-editor__save-plan"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSavePlan();
+          }}
+        >
+          <TextField
+            aria-label="Plan name"
+            placeholder="Plan name, e.g. Workout A"
+            value={planName}
+            onChange={(e) => setPlanName(e.target.value)}
+            list={editingPlan ? undefined : "workout-editor-plan-names"}
+            autoFocus
+          />
+          {!editingPlan && (
+            <datalist id="workout-editor-plan-names">
+              {templates.map((template) => (
+                <option key={template.id} value={template.name} />
+              ))}
+            </datalist>
+          )}
+          <Button variant="secondary" onClick={stopEditingPlan}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!canSavePlan}>
+            Save plan
+          </Button>
+          {planNameTaken && (
+            <p className="workout-editor__plan-error">
+              Another plan is already called “{trimmedPlanName}”.
+            </p>
+          )}
+        </form>
+      )}
     </div>
   );
 }
