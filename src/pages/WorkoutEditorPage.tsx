@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, NumberField, TextField } from "../components/ui";
-import { muscleGroups, searchExercises } from "../data/exercises";
+import { RestTimer, type RestTimerState } from "../components/RestTimer";
+import { getExerciseById, muscleGroups, searchExercises } from "../data/exercises";
 import {
   entriesFromTemplate,
   findLastEntry,
@@ -21,6 +22,7 @@ import type {
 import "./WorkoutEditorPage.css";
 
 const DEFAULT_TARGET: ExerciseTarget = { sets: 3, repsMin: 8, repsMax: 12 };
+const DEFAULT_REST_SEC = 90;
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -58,6 +60,7 @@ export function WorkoutEditorPage({
   const [entries, setEntries] = useState<ExerciseEntry[]>(
     initialSession?.exercises ?? [],
   );
+  const [restTimer, setRestTimer] = useState<RestTimerState | null>(null);
 
   const { templates, saveTemplate, deleteTemplate } = useTemplates();
   const [planName, setPlanName] = useState<string | null>(null);
@@ -267,6 +270,27 @@ export function WorkoutEditorPage({
           : entry,
       ),
     );
+  };
+
+  // Ticking a set done starts (or replaces) the rest timer; un-ticking the set
+  // that started it cancels it.
+  const toggleSetDone = (entry: ExerciseEntry, setIndex: number, done: boolean) => {
+    updateSet(entry.id, setIndex, { done });
+    if (done) {
+      setRestTimer({
+        id: crypto.randomUUID(),
+        entryId: entry.id,
+        setIndex,
+        seconds: getExerciseById(entry.exerciseId)?.restSec ?? DEFAULT_REST_SEC,
+        exerciseName: entry.name,
+      });
+    } else {
+      setRestTimer((current) =>
+        current && current.entryId === entry.id && current.setIndex === setIndex
+          ? null
+          : current,
+      );
+    }
   };
 
   const canSave =
@@ -578,9 +602,7 @@ export function WorkoutEditorPage({
                                   set.done ? " workout-editor__done--on" : ""
                                 }`}
                                 onClick={() =>
-                                  updateSet(entry.id, setIndex, {
-                                    done: !set.done,
-                                  })
+                                  toggleSetDone(entry, setIndex, !set.done)
                                 }
                                 aria-pressed={!!set.done}
                                 aria-label={`Set ${setIndex + 1} done`}
@@ -669,6 +691,9 @@ export function WorkoutEditorPage({
             </p>
           )}
         </form>
+      )}
+      {restTimer && (
+        <RestTimer timer={restTimer} onDismiss={() => setRestTimer(null)} />
       )}
     </div>
   );

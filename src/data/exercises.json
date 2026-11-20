@@ -5,7 +5,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "quads",
-    "secondaryMuscles": ["glutes", "hamstrings", "core"]
+    "secondaryMuscles": ["glutes", "hamstrings", "core"],
+    "restSec": 180
   },
   {
     "id": "barbell-deadlift",
@@ -13,7 +14,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["glutes", "hamstrings", "forearms"]
+    "secondaryMuscles": ["glutes", "hamstrings", "forearms"],
+    "restSec": 180
   },
   {
     "id": "barbell-bench-press",
@@ -21,7 +23,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "chest",
-    "secondaryMuscles": ["shoulders", "triceps"]
+    "secondaryMuscles": ["shoulders", "triceps"],
+    "restSec": 150
   },
   {
     "id": "barbell-overhead-press",
@@ -29,7 +32,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "shoulders",
-    "secondaryMuscles": ["triceps", "core"]
+    "secondaryMuscles": ["triceps", "core"],
+    "restSec": 150
   },
   {
     "id": "barbell-bent-over-row",
@@ -37,7 +41,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["biceps", "shoulders"]
+    "secondaryMuscles": ["biceps", "shoulders"],
+    "restSec": 120
   },
   {
     "id": "pull-up",
@@ -45,7 +50,8 @@
     "category": "compound",
     "equipment": ["bodyweight"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["biceps", "forearms"]
+    "secondaryMuscles": ["biceps", "forearms"],
+    "restSec": 90
   },
   {
     "id": "inverted-row",
@@ -53,7 +59,8 @@
     "category": "compound",
     "equipment": ["bodyweight"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["biceps", "shoulders", "forearms"]
+    "secondaryMuscles": ["biceps", "shoulders", "forearms"],
+    "restSec": 90
   },
   {
     "id": "dip",
@@ -61,7 +68,8 @@
     "category": "compound",
     "equipment": ["bodyweight"],
     "targetMuscle": "chest",
-    "secondaryMuscles": ["triceps", "shoulders"]
+    "secondaryMuscles": ["triceps", "shoulders"],
+    "restSec": 90
   },
   {
     "id": "dumbbell-bench-press",
@@ -69,7 +77,8 @@
     "category": "compound",
     "equipment": ["dumbbell"],
     "targetMuscle": "chest",
-    "secondaryMuscles": ["shoulders", "triceps"]
+    "secondaryMuscles": ["shoulders", "triceps"],
+    "restSec": 120
   },
   {
     "id": "dumbbell-shoulder-press",
@@ -77,7 +86,8 @@
     "category": "compound",
     "equipment": ["dumbbell"],
     "targetMuscle": "shoulders",
-    "secondaryMuscles": ["triceps"]
+    "secondaryMuscles": ["triceps"],
+    "restSec": 120
   },
   {
     "id": "dumbbell-romanian-deadlift",
@@ -85,7 +95,8 @@
     "category": "compound",
     "equipment": ["dumbbell"],
     "targetMuscle": "hamstrings",
-    "secondaryMuscles": ["glutes", "back"]
+    "secondaryMuscles": ["glutes", "back"],
+    "restSec": 120
   },
   {
     "id": "dumbbell-lunge",
@@ -93,7 +104,8 @@
     "category": "compound",
     "equipment": ["dumbbell"],
     "targetMuscle": "quads",
-    "secondaryMuscles": ["glutes", "hamstrings"]
+    "secondaryMuscles": ["glutes", "hamstrings"],
+    "restSec": 90
   },
   {
     "id": "leg-press",
@@ -101,7 +113,8 @@
     "category": "compound",
     "equipment": ["machine"],
     "targetMuscle": "quads",
-    "secondaryMuscles": ["glutes", "hamstrings"]
+    "secondaryMuscles": ["glutes", "hamstrings"],
+    "restSec": 120
   },
   {
     "id": "lat-pulldown",
@@ -109,7 +122,8 @@
     "category": "compound",
     "equipment": ["cable", "machine"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["biceps"]
+    "secondaryMuscles": ["biceps"],
+    "restSec": 90
   },
   {
     "id": "seated-cable-row",
@@ -117,7 +131,8 @@
     "category": "compound",
     "equipment": ["cable"],
     "targetMuscle": "back",
-    "secondaryMuscles": ["biceps", "shoulders"]
+    "secondaryMuscles": ["biceps", "shoulders"],
+    "restSec": 90
   },
   {
     "id": "leg-curl",
@@ -125,7 +140,8 @@
     "category": "isolation",
     "equipment": ["machine"],
     "targetMuscle": "hamstrings",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "leg-extension",
@@ -133,7 +149,8 @@
     "category": "isolation",
     "equipment": ["machine"],
     "targetMuscle": "quads",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "standing-calf-raise",
@@ -141,7 +158,8 @@
     "category": "isolation",
     "equipment": ["machine", "bodyweight"],
     "targetMuscle": "calves",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "dumbbell-bicep-curl",
@@ -149,7 +167,8 @@
     "category": "isolation",
     "equipment": ["dumbbell"],
     "targetMuscle": "biceps",
-    "secondaryMuscles": ["forearms"]
+    "secondaryMuscles": ["forearms"],
+    "restSec": 60
   },
   {
     "id": "cable-tricep-pushdown",
@@ -157,7 +176,8 @@
     "category": "isolation",
     "equipment": ["cable"],
     "targetMuscle": "triceps",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "lateral-raise",
@@ -165,7 +185,8 @@
     "category": "isolation",
     "equipment": ["dumbbell"],
     "targetMuscle": "shoulders",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "face-pull",
@@ -173,7 +194,8 @@
     "category": "isolation",
     "equipment": ["cable"],
     "targetMuscle": "shoulders",
-    "secondaryMuscles": ["back"]
+    "secondaryMuscles": ["back"],
+    "restSec": 60
   },
   {
     "id": "plank",
@@ -181,7 +203,8 @@
     "category": "isolation",
     "equipment": ["bodyweight"],
     "targetMuscle": "core",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 45
   },
   {
     "id": "hanging-leg-raise",
@@ -189,7 +212,8 @@
     "category": "isolation",
     "equipment": ["bodyweight"],
     "targetMuscle": "core",
-    "secondaryMuscles": ["forearms"]
+    "secondaryMuscles": ["forearms"],
+    "restSec": 60
   },
   {
     "id": "kettlebell-swing",
@@ -197,7 +221,8 @@
     "category": "compound",
     "equipment": ["kettlebell"],
     "targetMuscle": "glutes",
-    "secondaryMuscles": ["hamstrings", "core"]
+    "secondaryMuscles": ["hamstrings", "core"],
+    "restSec": 60
   },
   {
     "id": "goblet-squat",
@@ -205,7 +230,8 @@
     "category": "compound",
     "equipment": ["kettlebell", "dumbbell"],
     "targetMuscle": "quads",
-    "secondaryMuscles": ["glutes", "core"]
+    "secondaryMuscles": ["glutes", "core"],
+    "restSec": 90
   },
   {
     "id": "barbell-romanian-deadlift",
@@ -213,7 +239,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "hamstrings",
-    "secondaryMuscles": ["glutes", "back"]
+    "secondaryMuscles": ["glutes", "back"],
+    "restSec": 150
   },
   {
     "id": "barbell-hip-thrust",
@@ -221,7 +248,8 @@
     "category": "compound",
     "equipment": ["barbell"],
     "targetMuscle": "glutes",
-    "secondaryMuscles": ["hamstrings"]
+    "secondaryMuscles": ["hamstrings"],
+    "restSec": 120
   },
   {
     "id": "incline-dumbbell-press",
@@ -229,7 +257,8 @@
     "category": "compound",
     "equipment": ["dumbbell"],
     "targetMuscle": "chest",
-    "secondaryMuscles": ["shoulders", "triceps"]
+    "secondaryMuscles": ["shoulders", "triceps"],
+    "restSec": 120
   },
   {
     "id": "overhead-dumbbell-tricep-extension",
@@ -237,7 +266,8 @@
     "category": "isolation",
     "equipment": ["dumbbell"],
     "targetMuscle": "triceps",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   },
   {
     "id": "harness-neck-extension",
@@ -245,6 +275,7 @@
     "category": "isolation",
     "equipment": ["harness"],
     "targetMuscle": "neck",
-    "secondaryMuscles": []
+    "secondaryMuscles": [],
+    "restSec": 60
   }
 ]

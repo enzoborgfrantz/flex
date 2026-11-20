@@ -29,4 +29,6 @@ export interface Exercise {
   equipment: Equipment[]
   targetMuscle: MuscleGroup
   secondaryMuscles: MuscleGroup[]
+  // Suggested rest between sets, in seconds.
+  restSec: number
 }
