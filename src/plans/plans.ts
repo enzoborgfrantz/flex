@@ -80,10 +80,16 @@ export function templateExercisesFromEntries(entries: ExerciseEntry[]): Template
   })
 }
 
-// Every set reached the top of the range. Unticked sets don't count, otherwise the pre-filled
-// reps would trigger this on a bad day; sets logged before ticking existed (no flag) do count.
+// Every set reached the top of the range, at the same weight. Unticked sets don't count,
+// otherwise the pre-filled reps would trigger this on a bad day; sets logged before ticking
+// existed (no flag) do count. Mixed weights (e.g. a ramp-up) mean the lift wasn't actually
+// maxed out across the board, so it shouldn't suggest going up.
 export function isReadyToIncrease(last: ExerciseEntry, repsMax: number): boolean {
-  return last.sets.length > 0 && last.sets.every((set) => set.done !== false && set.reps >= repsMax)
+  if (last.sets.length === 0) return false
+  const weightKg = last.sets[0].weightKg
+  return last.sets.every(
+    (set) => set.done !== false && set.reps >= repsMax && set.weightKg === weightKg,
+  )
 }
 
 export function formatTarget({ sets, repsMin, repsMax }: ExerciseTarget): string {

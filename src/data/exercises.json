@@ -48,6 +48,14 @@
     "secondaryMuscles": ["biceps", "forearms"]
   },
   {
+    "id": "inverted-row",
+    "name": "Inverted Row",
+    "category": "compound",
+    "equipment": ["bodyweight"],
+    "targetMuscle": "back",
+    "secondaryMuscles": ["biceps", "shoulders", "forearms"]
+  },
+  {
     "id": "dip",
     "name": "Dip",
     "category": "compound",

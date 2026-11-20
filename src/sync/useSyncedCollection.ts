@@ -107,13 +107,16 @@ export function useSyncedCollection<T extends Syncable>(config: SyncedCollection
         setItems((current) => {
           const merged = mergeByLatest(current, upgraded, sort)
           saveLocal(merged)
+          // Local may hold changes Drive never got (e.g. a push that failed or
+          // never fired before the tab closed) — push the merge back so they land.
+          scheduleSync(merged)
           return merged
         })
       })
       .catch(() => {
         // No network / Drive unavailable — keep working off local storage.
       })
-  }, [accessToken, remote, saveLocal, sort, normalize])
+  }, [accessToken, remote, saveLocal, sort, normalize, scheduleSync])
 
   // Every local change goes through here: persist to this device, then debounce a push to Drive.
   const update = useCallback(

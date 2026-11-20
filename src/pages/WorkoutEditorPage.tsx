@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Card, TextField } from "../components/ui";
+import { Button, Card, NumberField, TextField } from "../components/ui";
 import { muscleGroups, searchExercises } from "../data/exercises";
 import {
   entriesFromTemplate,
@@ -448,53 +448,43 @@ export function WorkoutEditorPage({
                       <tbody>
                         <tr>
                           <td>
-                            <input
-                              type="number"
+                            <NumberField
                               min={1}
                               aria-label="Target sets"
                               value={exercise.target.sets}
-                              onChange={(e) =>
-                                updatePlanExercise(exercise.key, {
-                                  sets: Number(e.target.value),
-                                })
+                              onChange={(sets) =>
+                                updatePlanExercise(exercise.key, { sets })
                               }
                             />
                           </td>
                           <td className="workout-editor__rep-range">
-                            <input
-                              type="number"
+                            <NumberField
                               min={1}
                               aria-label="Minimum reps"
                               value={exercise.target.repsMin}
-                              onChange={(e) =>
-                                updatePlanExercise(exercise.key, {
-                                  repsMin: Number(e.target.value),
-                                })
+                              onChange={(repsMin) =>
+                                updatePlanExercise(exercise.key, { repsMin })
                               }
                             />
                             –
-                            <input
-                              type="number"
+                            <NumberField
                               min={1}
                               aria-label="Maximum reps"
                               value={exercise.target.repsMax}
-                              onChange={(e) =>
-                                updatePlanExercise(exercise.key, {
-                                  repsMax: Number(e.target.value),
-                                })
+                              onChange={(repsMax) =>
+                                updatePlanExercise(exercise.key, { repsMax })
                               }
                             />
                           </td>
                           <td>
-                            <input
-                              type="number"
+                            <NumberField
                               min={0}
                               step={0.5}
                               aria-label="Starting weight in kg"
                               value={exercise.startWeightKg}
-                              onChange={(e) =>
+                              onChange={(startWeightKg) =>
                                 updatePlanExercise(exercise.key, {
-                                  startWeightKg: Number(e.target.value),
+                                  startWeightKg,
                                 })
                               }
                             />
@@ -563,27 +553,21 @@ export function WorkoutEditorPage({
                           <tr key={setIndex}>
                             <td>{setIndex + 1}</td>
                             <td>
-                              <input
-                                type="number"
+                              <NumberField
                                 min={0}
                                 value={set.reps}
-                                onChange={(e) =>
-                                  updateSet(entry.id, setIndex, {
-                                    reps: Number(e.target.value),
-                                  })
+                                onChange={(reps) =>
+                                  updateSet(entry.id, setIndex, { reps })
                                 }
                               />
                             </td>
                             <td>
-                              <input
-                                type="number"
+                              <NumberField
                                 min={0}
                                 step={0.5}
                                 value={set.weightKg}
-                                onChange={(e) =>
-                                  updateSet(entry.id, setIndex, {
-                                    weightKg: Number(e.target.value),
-                                  })
+                                onChange={(weightKg) =>
+                                  updateSet(entry.id, setIndex, { weightKg })
                                 }
                               />
                             </td>
