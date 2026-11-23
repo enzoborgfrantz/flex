@@ -340,11 +340,7 @@
   pointer-events: none;
   opacity: 0;
   border-radius: 0 0 12px 12px;
-  background: linear-gradient(to bottom, transparent, var(--surface) 85%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  mask-image: linear-gradient(to bottom, transparent, black 60%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 60%);
+  background: linear-gradient(to bottom, transparent, var(--void) 85%);
   transition: opacity 0.2s ease;
 }
 
