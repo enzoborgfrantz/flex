@@ -14,7 +14,7 @@ interface RestTimerProps {
   onDismiss: () => void;
 }
 
-const ADJUST_STEP_SEC = 15;
+const ADJUST_STEP_SEC = 30;
 
 function playChime() {
   try {
@@ -93,16 +93,16 @@ export function RestTimer({ timer, onDismiss }: RestTimerProps) {
         <button
           type="button"
           onClick={() => setRemaining((current) => Math.max(0, current - ADJUST_STEP_SEC))}
-          aria-label="Subtract 15 seconds"
+          aria-label="Subtract 30 seconds"
         >
-          −15
+          −30
         </button>
         <button
           type="button"
           onClick={() => setRemaining((current) => current + ADJUST_STEP_SEC)}
-          aria-label="Add 15 seconds"
+          aria-label="Add 30 seconds"
         >
-          +15
+          +30
         </button>
         <button
           type="button"

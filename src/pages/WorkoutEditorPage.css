@@ -10,6 +10,19 @@
   margin-bottom: 16px;
 }
 
+/* The rest timer floats fixed at the bottom of the viewport; reserve room
+   below the page's own content so it never permanently covers the last
+   row of buttons and the page can still scroll them into view. */
+.workout-editor--rest-timer-active {
+  padding-bottom: 96px;
+}
+
+@media (max-width: 480px) {
+  .workout-editor--rest-timer-active {
+    padding-bottom: 88px;
+  }
+}
+
 @media (max-width: 480px) {
   /* Bleed the panel to the screen edges instead of sitting inset inside
      both the page's own padding and the card's — one padding layer (the

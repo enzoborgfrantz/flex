@@ -346,7 +346,7 @@ export function WorkoutEditorPage({
   };
 
   return (
-    <div className="workout-editor">
+    <div className={`workout-editor${restTimer ? " workout-editor--rest-timer-active" : ""}`}>
       <h1
         style={{
           margin: "0",
