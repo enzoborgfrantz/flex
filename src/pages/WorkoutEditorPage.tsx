@@ -346,14 +346,22 @@ export function WorkoutEditorPage({
         return {
           ...entry,
           sets: entry.sets.map((set, index) => {
-            if (index === setIndex) return { ...set, ...change };
+            if (index === setIndex) {
+              return {
+                ...set,
+                reps: change.reps ?? set.reps,
+                weightKg: change.weightKg ?? set.weightKg,
+                done: change.done ?? set.done,
+              };
+            }
+            const newWeight = change.weightKg;
             const shouldPropagateWeight =
-              change.weightKg !== undefined &&
+              newWeight !== undefined &&
               index > setIndex &&
               !set.done &&
               set.weightKg === previousWeight;
             return shouldPropagateWeight
-              ? { ...set, weightKg: change.weightKg }
+              ? { ...set, weightKg: newWeight }
               : set;
           }),
         };
