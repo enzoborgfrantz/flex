@@ -9,14 +9,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize
 }
 
-export function Button({ variant = 'primary', size = 'md', className, type = 'button', children, ...rest }: ButtonProps) {
+export function Button({ variant = 'metal', size = 'md', className, type = 'button', children, ...rest }: ButtonProps) {
   const classes = ['ui-button', `ui-button--${variant}`, size === 'sm' && 'ui-button--sm', className]
     .filter(Boolean)
     .join(' ')
 
   return (
     <button type={type} className={classes} {...rest}>
-      {variant === 'secondary' ? <span className="ui-button__label">{children}</span> : children}
+      {children}
     </button>
   )
 }

@@ -44,27 +44,44 @@
   transform: translateY(1px);
 }
 
-/* Secondary: brushed gunmetal chrome pill — hardware, not an action. */
+/* Secondary: transparent fill, metal-gradient text and ring border. */
 .ui-button--secondary {
   position: relative;
-  background: var(--chrome-gradient);
-  color: var(--chrome-text);
-  text-shadow: var(--chrome-text-shadow-btn);
-  box-shadow: var(--chrome-shadow);
+  background: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  transition:
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ui-button--secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--metal-outline-gradient);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .ui-button--secondary:hover:not(:disabled) {
-  background: var(--chrome-gradient-hover);
-  box-shadow: var(--chrome-shadow-hover);
+  filter: brightness(1.15);
+  box-shadow: 0 0 20px rgba(230, 206, 183, 0.25);
 }
 
 .ui-button--secondary:active:not(:disabled) {
-  background: var(--chrome-gradient-active);
   transform: translateY(1px);
-}
-
-.ui-button--secondary .ui-button__label {
-  position: relative;
 }
 
 /* Ivory: glossy cream enamel for brand sign-in actions (Google, etc). */
@@ -152,9 +169,8 @@
 }
 
 .ui-card--interactive:hover {
-  box-shadow:
-    var(--surface-shadow),
-    0 0 0 1px rgba(255, 59, 59, 0.3);
+  border-color: var(--accent-border);
+  box-shadow: var(--surface-shadow);
   transform: translateY(-1px);
 }
 

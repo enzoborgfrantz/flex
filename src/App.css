@@ -85,7 +85,6 @@
   gap: 16px;
   align-items: center;
   width: 100%;
-  max-width: 760px;
 }
 
 .account {
@@ -117,12 +116,12 @@
 
 .sync-dot {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 11px;
-  height: 11px;
+  bottom: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
   padding: 0;
-  border: 2px solid var(--void);
+  border: 1px solid var(--void);
   border-radius: 50%;
   background: #4a4c52;
   cursor: default;
@@ -205,6 +204,10 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+
+  @media (min-width: 481px) {
+    flex-direction: row-reverse;
+  }
 }
 
 .dashboard__toolbar h1 {
@@ -227,7 +230,7 @@
 
 .dashboard__session-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
@@ -237,12 +240,34 @@
   font-variant-numeric: tabular-nums;
   color: var(--bone);
   font-size: 16px;
+  white-space: nowrap;
 }
 
 .dashboard__sessions p {
   color: var(--muted);
   font-size: 13px;
   white-space: nowrap;
+}
+
+.dashboard__draft-card {
+  position: relative;
+  border-color: var(--accent-border);
+}
+
+.dashboard__draft-tag {
+  position: absolute;
+  top: -9px;
+  right: 14px;
+  font-family: var(--heading);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--phosphor);
+  background: var(--void);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 3px 6px;
 }
 
 .error {

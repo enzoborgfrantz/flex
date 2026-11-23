@@ -65,6 +65,17 @@
   padding: 16px;
 }
 
+@media (max-width: 480px) {
+  /* Same fix as the outer panel: this card sits inside the panel's own
+     16px padding, so its content was getting a second 16px of inset on
+     top of that — bleed it out to the panel's edges and square it off
+     to free that width up for the sets table. */
+  .workout-editor__entry {
+    margin-inline: -16px;
+    border-radius: 0;
+  }
+}
+
 .workout-editor__entry-header {
   display: flex;
   justify-content: space-between;
@@ -76,6 +87,20 @@
   font-family: var(--sans);
   font-weight: 900;
   color: var(--bone);
+}
+
+.workout-editor__entry-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.workout-editor__entry-move {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .workout-editor__icon-btn {
@@ -97,6 +122,23 @@
 
 .workout-editor__icon-btn--exercise:hover {
   color: #ff6b5e;
+}
+
+/* Reorders the exercise — quieter than delete so it doesn't compete with it. */
+.workout-editor__icon-btn--move {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.workout-editor__icon-btn--move:hover {
+  color: var(--bone);
+}
+
+/* Disabled arrows (first/last exercise) keep their layout space so titles
+   across cards stay aligned, but are invisible and unclickable. */
+.workout-editor__icon-btn--move:disabled {
+  visibility: hidden;
+  cursor: default;
 }
 
 /* Removes a single set — deliberately quieter so it doesn't read as the
@@ -449,6 +491,12 @@
   color: var(--label-red);
 }
 
+.workout-editor__entry-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .workout-editor__entry-meta {
   display: flex;
   flex-wrap: wrap;
@@ -482,6 +530,9 @@
 }
 
 .workout-editor__done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 34px;
   height: 34px;
   border: 0;

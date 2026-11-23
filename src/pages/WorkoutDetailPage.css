@@ -19,7 +19,15 @@
 .workout-detail__date {
   font-size: 28px;
   letter-spacing: 3px;
-  margin-bottom: 4px;
+  margin-bottom: 14px;
+  color: var(--text-h);
+  background: -webkit-linear-gradient(#9e9e9e, #ffffff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 3px rgb(187 187 187 / 45%),
+    0 2px 0 rgba(0, 0, 0, 0.9);
 }
 
 .workout-detail__notes {

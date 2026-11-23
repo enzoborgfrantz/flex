@@ -253,6 +253,38 @@ export function WorkoutEditorPage({
     );
   };
 
+  const moveExercise = (entryId: string, direction: -1 | 1) => {
+    setEntries((current) => {
+      const index = current.findIndex((entry) => entry.id === entryId);
+      const target = index + direction;
+      if (index === -1 || target < 0 || target >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  const movePlanExercise = (key: string, direction: -1 | 1) => {
+    setEditingPlan((current) => {
+      if (!current) return current;
+      const index = current.exercises.findIndex(
+        (exercise) => exercise.key === key,
+      );
+      const target = index + direction;
+      if (index === -1 || target < 0 || target >= current.exercises.length) {
+        return current;
+      }
+      const exercises = [...current.exercises];
+      [exercises[index], exercises[target]] = [
+        exercises[target],
+        exercises[index],
+      ];
+      return { ...current, exercises };
+    });
+  };
+
   // A new set copies the one before it, unticked.
   const addSet = (entryId: string) => {
     setEntries((current) =>
@@ -287,22 +319,34 @@ export function WorkoutEditorPage({
     );
   };
 
+  // Changing a set's weight also carries forward to later sets that still
+  // matched its old weight, so bumping set 1 updates the rest of a
+  // same-weight exercise without touching sets already done or ones that
+  // were deliberately set to a different weight (e.g. a pyramid).
   const updateSet = (
     entryId: string,
     setIndex: number,
     change: { reps?: number; weightKg?: number; done?: boolean },
   ) => {
     setEntries((current) =>
-      current.map((entry) =>
-        entry.id === entryId
-          ? {
-              ...entry,
-              sets: entry.sets.map((set, index) =>
-                index === setIndex ? { ...set, ...change } : set,
-              ),
-            }
-          : entry,
-      ),
+      current.map((entry) => {
+        if (entry.id !== entryId) return entry;
+        const previousWeight = entry.sets[setIndex]?.weightKg;
+        return {
+          ...entry,
+          sets: entry.sets.map((set, index) => {
+            if (index === setIndex) return { ...set, ...change };
+            const shouldPropagateWeight =
+              change.weightKg !== undefined &&
+              index > setIndex &&
+              !set.done &&
+              set.weightKg === previousWeight;
+            return shouldPropagateWeight
+              ? { ...set, weightKg: change.weightKg }
+              : set;
+          }),
+        };
+      }),
     );
   };
 
@@ -346,7 +390,9 @@ export function WorkoutEditorPage({
   };
 
   return (
-    <div className={`workout-editor${restTimer ? " workout-editor--rest-timer-active" : ""}`}>
+    <div
+      className={`workout-editor${restTimer ? " workout-editor--rest-timer-active" : ""}`}
+    >
       <h1
         style={{
           margin: "0",
@@ -410,86 +456,37 @@ export function WorkoutEditorPage({
             <hr className="workout-editor__divider" />
           </>
         )}
-        <h2>Exercises</h2>
-        <div className="workout-editor__filters">
-          <TextField
-            aria-label="Exercise library"
-            placeholder="Search, e.g. squat"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-        <div
-          className="workout-editor__muscle-chips"
-          role="group"
-          aria-label="Filter by target muscle"
-        >
-          <button
-            type="button"
-            className={`workout-editor__muscle-chip${
-              selectedMuscle === "all"
-                ? " workout-editor__muscle-chip--active"
-                : ""
-            }`}
-            onClick={() => setSelectedMuscle("all")}
-          >
-            All
-          </button>
-          {muscleGroups.map((muscle) => (
-            <button
-              key={muscle}
-              type="button"
-              className={`workout-editor__muscle-chip${
-                selectedMuscle === muscle
-                  ? " workout-editor__muscle-chip--active"
-                  : ""
-              }`}
-              onClick={() => setSelectedMuscle(muscle)}
-            >
-              {muscle.charAt(0).toUpperCase() + muscle.slice(1)}
-            </button>
-          ))}
-        </div>
-        <div className="workout-editor__library-list-wrap">
-          <ul className="workout-editor__library-list" ref={libraryListRef}>
-            {matches.map((exercise) => (
-              <li key={exercise.id}>
-                <button
-                  type="button"
-                  className="workout-editor__library-item"
-                  onClick={() => addExercise(exercise)}
-                >
-                  <strong>{exercise.name}</strong>
-                  <span
-                    className="workout-editor__library-add"
-                    aria-hidden="true"
-                  >
-                    +
-                  </span>
-                </button>
-              </li>
-            ))}
-            {matches.length === 0 && <p>No exercises match those filters.</p>}
-          </ul>
-          <div
-            className={`workout-editor__library-fade${
-              showScrollFade ? " workout-editor__library-fade--visible" : ""
-            }`}
-            aria-hidden="true"
-          />
-        </div>
-
-        <hr className="workout-editor__divider" />
-
         {editingPlan ? (
           editingPlan.exercises.length === 0 ? (
             <p>No exercises in this plan yet.</p>
           ) : (
             <ul className="workout-editor__entries">
-              {editingPlan.exercises.map((exercise) => (
+              {editingPlan.exercises.map((exercise, index) => (
                 <li key={exercise.key} className="workout-editor__entry">
                   <div className="workout-editor__entry-header">
-                    <strong>{exercise.name}</strong>
+                    <div className="workout-editor__entry-title">
+                      <div className="workout-editor__entry-move">
+                        <button
+                          type="button"
+                          className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                          onClick={() => movePlanExercise(exercise.key, -1)}
+                          disabled={index === 0}
+                          aria-label="Move exercise up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                          onClick={() => movePlanExercise(exercise.key, 1)}
+                          disabled={index === editingPlan.exercises.length - 1}
+                          aria-label="Move exercise down"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                      <strong>{exercise.name}</strong>
+                    </div>
                     <button
                       type="button"
                       className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
@@ -569,7 +566,7 @@ export function WorkoutEditorPage({
           <p>No exercises added yet.</p>
         ) : (
           <ul className="workout-editor__entries">
-            {entries.map((entry) => {
+            {entries.map((entry, index) => {
               const last = lastEntryFor(entry.exerciseId);
               return (
                 <li key={entry.id} className="workout-editor__entry">
@@ -664,18 +661,111 @@ export function WorkoutEditorPage({
                       </tbody>
                     </table>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => addSet(entry.id)}
-                  >
-                    + Add set
-                  </Button>
+                  <div className="workout-editor__entry-footer">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => addSet(entry.id)}
+                    >
+                      + Add set
+                    </Button>
+                    <div className="workout-editor__entry-move">
+                      <button
+                        type="button"
+                        className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                        onClick={() => moveExercise(entry.id, -1)}
+                        disabled={index === 0}
+                        aria-label="Move exercise up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                        onClick={() => moveExercise(entry.id, 1)}
+                        disabled={index === entries.length - 1}
+                        aria-label="Move exercise down"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
+
+        <hr className="workout-editor__divider" />
+
+        <h2>Exercises</h2>
+        <div className="workout-editor__filters">
+          <TextField
+            aria-label="Exercise library"
+            placeholder="Search, e.g. squat"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div
+          className="workout-editor__muscle-chips"
+          role="group"
+          aria-label="Filter by target muscle"
+        >
+          <button
+            type="button"
+            className={`workout-editor__muscle-chip${
+              selectedMuscle === "all"
+                ? " workout-editor__muscle-chip--active"
+                : ""
+            }`}
+            onClick={() => setSelectedMuscle("all")}
+          >
+            All
+          </button>
+          {muscleGroups.map((muscle) => (
+            <button
+              key={muscle}
+              type="button"
+              className={`workout-editor__muscle-chip${
+                selectedMuscle === muscle
+                  ? " workout-editor__muscle-chip--active"
+                  : ""
+              }`}
+              onClick={() => setSelectedMuscle(muscle)}
+            >
+              {muscle.charAt(0).toUpperCase() + muscle.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="workout-editor__library-list-wrap">
+          <ul className="workout-editor__library-list" ref={libraryListRef}>
+            {matches.map((exercise) => (
+              <li key={exercise.id}>
+                <button
+                  type="button"
+                  className="workout-editor__library-item"
+                  onClick={() => addExercise(exercise)}
+                >
+                  <strong>{exercise.name}</strong>
+                  <span
+                    className="workout-editor__library-add"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </button>
+              </li>
+            ))}
+            {matches.length === 0 && <p>No exercises match those filters.</p>}
+          </ul>
+          <div
+            className={`workout-editor__library-fade${
+              showScrollFade ? " workout-editor__library-fade--visible" : ""
+            }`}
+            aria-hidden="true"
+          />
+        </div>
       </Card>
 
       {planName === null ? (
@@ -692,7 +782,7 @@ export function WorkoutEditorPage({
             Cancel
           </Button>
           <Button disabled={!canSave} onClick={handleSave}>
-            Save workout
+            Save
           </Button>
         </div>
       ) : (

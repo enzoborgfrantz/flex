@@ -160,13 +160,7 @@
     0 0 20px rgba(255, 240, 210, 0.35);
 
   /* LCD: recessed red-phosphor readout well, for numbers only. */
-  --lcd-bg:
-    repeating-linear-gradient(
-      180deg,
-      rgba(255, 40, 30, 0.06) 0 1px,
-      transparent 1px 3px
-    ),
-    radial-gradient(ellipse at 50% 0%, #2a0505 0%, #0c0202 72%);
+  --lcd-bg: radial-gradient(ellipse at 50% 0%, #2a0505 0%, #0c0202 72%);
   --lcd-shadow:
     inset 0 3px 10px rgba(0, 0, 0, 0.9),
     inset 0 0 0 1px rgba(255, 50, 40, 0.22),
@@ -184,10 +178,6 @@
   /* Opaque variant, for recessed surfaces that float over other content
      (e.g. the rest timer) where translucency would let it show through. */
   --recess-bg-solid: #0a0303;
-
-  /* Metallic gradient for the outline-style secondary surfaces. */
-  --metal-outline-gradient: var(--chrome-gradient);
-  --metal-outline-text-shadow: var(--chrome-text-shadow-btn);
 
   /* Polished chrome sweep: clean diagonal from bright to gunmetal, dark engraved text. */
   --chrome-gradient-metal: linear-gradient(
@@ -220,6 +210,9 @@
     #f5f6f8 88%,
     #ffffff 100%
   );
+  /* Metallic gradient reused for the transparent outline-style secondary buttons. */
+  --metal-outline-gradient: var(--chrome-gradient-metal);
+
   --chrome-text-metal: rgba(40, 40, 46, 0.8);
   --chrome-text-shadow-metal-btn:
     0 1px 0 rgba(255, 255, 255, 0.6), 0 -1px 1px rgba(0, 0, 0, 0.45);

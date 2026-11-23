@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth, type AuthUser } from "../auth/AuthContext";
 import { Logo } from "../components/Logo";
 import { Button, Card } from "../components/ui";
+import { loadWorkoutDraft } from "../storage/workoutDraftStore";
 import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
 import type { WorkoutSession } from "../types/workout";
 import { WorkoutDetailPage } from "./WorkoutDetailPage";
@@ -116,6 +117,13 @@ export function DashboardPage() {
   const { sessions, saveWorkout, deleteWorkout, syncStatus, retrySync } =
     useWorkouts();
   const [view, setView] = useState<View>({ name: "list" });
+  const [draft, setDraft] = useState(() => loadWorkoutDraft());
+
+  // The draft can change while the editor is open, so refresh it whenever
+  // we land back on the list — that's the only place it's displayed.
+  useEffect(() => {
+    if (view.name === "list") setDraft(loadWorkoutDraft());
+  }, [view]);
 
   const handleSave = (session: WorkoutSession) => {
     saveWorkout(session);
@@ -144,10 +152,28 @@ export function DashboardPage() {
             </Button>
             <h1>Past Workouts</h1>
           </div>
-          {sessions.length === 0 ? (
+          {sessions.length === 0 && !draft ? (
             <p>No workout sessions yet — start a new one above.</p>
           ) : (
             <ul className="dashboard__sessions">
+              {draft && (
+                <li>
+                  <Card
+                    interactive
+                    className="dashboard__draft-card"
+                    onClick={() => setView({ name: "new" })}
+                  >
+                    <span className="dashboard__draft-tag">Draft</span>
+                    <div className="dashboard__session-row">
+                      <strong>{draft.date}</strong>
+                      <p>
+                        {draft.exercises.length} exercise
+                        {draft.exercises.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                  </Card>
+                </li>
+              )}
               {sessions.map((session) => (
                 <li key={session.id}>
                   <Card
