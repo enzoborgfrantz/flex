@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth, type AuthUser } from "../auth/AuthContext";
 import { Logo } from "../components/Logo";
 import { Button, Card } from "../components/ui";
-import { loadWorkoutDraft } from "../storage/workoutDraftStore";
+import { clearWorkoutDraft, loadWorkoutDraft } from "../storage/workoutDraftStore";
 import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
 import type { WorkoutSession } from "../types/workout";
 import { WorkoutDetailPage } from "./WorkoutDetailPage";
@@ -11,6 +11,7 @@ import { WorkoutEditorPage } from "./WorkoutEditorPage";
 type View =
   | { name: "list" }
   | { name: "new" }
+  | { name: "resume-draft" }
   | { name: "edit"; session: WorkoutSession }
   | { name: "detail"; session: WorkoutSession };
 
@@ -161,9 +162,25 @@ export function DashboardPage() {
                   <Card
                     interactive
                     className="dashboard__draft-card"
-                    onClick={() => setView({ name: "new" })}
+                    onClick={() => setView({ name: "resume-draft" })}
                   >
-                    <span className="dashboard__draft-tag">Draft</span>
+                    <span className="dashboard__draft-tag-group">
+                      <span className="dashboard__draft-tag">Draft</span>
+                      <button
+                        type="button"
+                        className="dashboard__draft-delete"
+                        aria-label="Discard draft"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm("Discard this draft workout?")) {
+                            clearWorkoutDraft();
+                            setDraft(null);
+                          }
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </span>
                     <div className="dashboard__session-row">
                       <strong>{draft.date}</strong>
                       <p>
@@ -197,6 +214,15 @@ export function DashboardPage() {
 
       {view.name === "new" && (
         <WorkoutEditorPage
+          history={sessions}
+          onSave={handleSave}
+          onCancel={() => setView({ name: "list" })}
+        />
+      )}
+
+      {view.name === "resume-draft" && (
+        <WorkoutEditorPage
+          startFromDraft
           history={sessions}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}

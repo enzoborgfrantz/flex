@@ -3,11 +3,20 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  max-width: 760px;
+  max-width: 880px;
 }
 
 .workout-editor h2 {
   margin-bottom: 16px;
+}
+
+.workout-editor > h1 {
+  font-size: 20px;
+  letter-spacing: 1.5px;
+
+  @media (min-width: 481px) {
+    font-size: 24px;
+  }
 }
 
 /* The rest timer floats fixed at the bottom of the viewport; reserve room

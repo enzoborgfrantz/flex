@@ -58,6 +58,9 @@ type PlanDraftExercise = TemplateExercise & { key: string };
 
 interface WorkoutEditorPageProps {
   initialSession?: WorkoutSession;
+  // Resumes the saved draft, if any — used only by the dashboard's Draft
+  // card. A plain "New workout" always starts blank.
+  startFromDraft?: boolean;
   history: WorkoutSession[];
   onSave: (session: WorkoutSession) => void;
   onCancel: () => void;
@@ -65,24 +68,32 @@ interface WorkoutEditorPageProps {
 
 export function WorkoutEditorPage({
   initialSession,
+  startFromDraft,
   history,
   onSave,
   onCancel,
 }: WorkoutEditorPageProps) {
-  // A new workout (no initialSession) resumes from a saved draft, if any,
-  // so an accidental refresh or tab close doesn't lose logged sets.
-  const draft = initialSession ? null : loadWorkoutDraft();
+  const draft =
+    !initialSession && startFromDraft ? loadWorkoutDraft() : null;
   const [date, setDate] = useState(
     initialSession?.date ?? draft?.date ?? todayIso(),
   );
   const [entries, setEntries] = useState<ExerciseEntry[]>(
     initialSession?.exercises ?? draft?.exercises ?? [],
   );
+  // Tracks whether this session has ever held exercises, so a blank "new
+  // workout" that's immediately cancelled doesn't wipe out an unrelated
+  // draft that was already saved from a previous session.
+  const hadEntriesRef = useRef(entries.length > 0);
+
+  useEffect(() => {
+    if (entries.length > 0) hadEntriesRef.current = true;
+  }, [entries]);
 
   useEffect(() => {
     if (initialSession) return;
     if (entries.length === 0) {
-      clearWorkoutDraft();
+      if (hadEntriesRef.current) clearWorkoutDraft();
       return;
     }
     saveWorkoutDraft({ date, exercises: entries });
