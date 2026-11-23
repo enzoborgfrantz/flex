@@ -13,7 +13,7 @@ type View =
   | { name: "edit"; session: WorkoutSession }
   | { name: "detail"; session: WorkoutSession };
 
-function SyncBadge({
+function SyncDot({
   status,
   onRetry,
 }: {
@@ -21,28 +21,46 @@ function SyncBadge({
   onRetry: () => void;
 }) {
   if (status === "idle") return null;
-  if (status === "syncing")
-    return <span className="sync-badge sync-badge--busy">Syncing…</span>;
-  if (status === "synced")
-    return <span className="sync-badge sync-badge--ok">Synced to Drive</span>;
+
   if (status === "error")
     return (
       <button
         type="button"
-        className="sync-badge sync-badge--error"
+        className="sync-dot sync-dot--error"
         onClick={onRetry}
-      >
-        Sync failed — retry
-      </button>
+        title="Sync failed — click to retry"
+        aria-label="Sync failed — click to retry"
+      />
     );
-  return <span className="sync-badge">Saved on this device</span>;
+
+  const variant =
+    status === "syncing" ? "busy" : status === "synced" ? "ok" : "saved";
+  const label =
+    status === "syncing"
+      ? "Syncing…"
+      : status === "synced"
+        ? "Synced"
+        : "Saved on this device";
+
+  return (
+    <span
+      className={`sync-dot sync-dot--${variant}`}
+      role="status"
+      title={label}
+      aria-label={label}
+    />
+  );
 }
 
 function AccountMenu({
   user,
+  syncStatus,
+  onRetrySync,
   onSignOut,
 }: {
   user: AuthUser | null;
+  syncStatus: SyncStatus;
+  onRetrySync: () => void;
   onSignOut: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -80,6 +98,7 @@ function AccountMenu({
           </span>
         )}
       </button>
+      <SyncDot status={syncStatus} onRetry={onRetrySync} />
       {open && (
         <div className="account__dropdown">
           <span className="account__name">{user?.name}</span>
@@ -108,18 +127,22 @@ export function DashboardPage() {
       <header>
         <Logo onClick={() => setView({ name: "list" })} />
         <div className="account">
-          <SyncBadge status={syncStatus} onRetry={retrySync} />
-          <AccountMenu user={user} onSignOut={signOut} />
+          <AccountMenu
+            user={user}
+            syncStatus={syncStatus}
+            onRetrySync={retrySync}
+            onSignOut={signOut}
+          />
         </div>
       </header>
 
       {view.name === "list" && (
         <>
           <div className="dashboard__toolbar">
-            <h1>Past Workouts</h1>
-            <Button variant="ivory" onClick={() => setView({ name: "new" })}>
+            <Button variant="metal" onClick={() => setView({ name: "new" })}>
               New workout
             </Button>
+            <h1>Past Workouts</h1>
           </div>
           {sessions.length === 0 ? (
             <p>No workout sessions yet — start a new one above.</p>
@@ -131,11 +154,13 @@ export function DashboardPage() {
                     interactive
                     onClick={() => setView({ name: "detail", session })}
                   >
-                    <strong>{session.date}</strong>
-                    <p>
-                      {session.exercises.length} exercise
-                      {session.exercises.length === 1 ? "" : "s"}
-                    </p>
+                    <div className="dashboard__session-row">
+                      <strong>{session.date}</strong>
+                      <p>
+                        {session.exercises.length} exercise
+                        {session.exercises.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
                   </Card>
                 </li>
               ))}

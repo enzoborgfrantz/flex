@@ -51,7 +51,7 @@
     "equipment": ["bodyweight"],
     "targetMuscle": "back",
     "secondaryMuscles": ["biceps", "forearms"],
-    "restSec": 90
+    "restSec": 180
   },
   {
     "id": "inverted-row",

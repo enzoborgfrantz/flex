@@ -186,6 +186,49 @@
   --metal-outline-gradient: var(--chrome-gradient);
   --metal-outline-text-shadow: var(--chrome-text-shadow-btn);
 
+  /* Polished chrome sweep: clean diagonal from bright to gunmetal, dark engraved text. */
+  --chrome-gradient-metal: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #f5f6f8 12%,
+    #d6d9dd 26%,
+    #9ea3ab 48%,
+    #6b6f76 68%,
+    #5c6066 84%,
+    #44474c 100%
+  );
+  --chrome-gradient-metal-hover: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #fcfdfe 12%,
+    #e2e5e9 26%,
+    #adb2ba 48%,
+    #797d84 68%,
+    #696d73 84%,
+    #505358 100%
+  );
+  --chrome-gradient-metal-active: linear-gradient(
+    100deg,
+    #44474c 0%,
+    #5c6066 16%,
+    #6b6f76 32%,
+    #9ea3ab 52%,
+    #d6d9dd 74%,
+    #f5f6f8 88%,
+    #ffffff 100%
+  );
+  --chrome-text-metal: rgba(40, 40, 46, 0.8);
+  --chrome-text-shadow-metal-btn:
+    0 1px 0 rgba(255, 255, 255, 0.6), 0 -1px 1px rgba(0, 0, 0, 0.45);
+  --chrome-shadow-metal:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.4),
+    0 0 28px rgba(230, 206, 183, 0.4);
+  --chrome-shadow-metal-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.45),
+    0 0 36px rgba(230, 206, 183, 0.55);
+
   --sans: "Archivo", system-ui, "Segoe UI", Roboto, sans-serif;
   --heading: "Michroma", sans-serif;
   --mono: "Orbitron", ui-monospace, Consolas, monospace;

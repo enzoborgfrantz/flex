@@ -6,6 +6,16 @@
   max-width: 560px;
 }
 
+@media (max-width: 480px) {
+  /* Bleed the panel to the screen edges instead of sitting inset inside
+     both the page's own padding and the card's — one padding layer (the
+     card's) reads as intentional; two reads as wasted mobile width. */
+  .workout-detail > .ui-card {
+    margin-inline: -16px;
+    border-radius: 0;
+  }
+}
+
 .workout-detail__date {
   font-size: 28px;
   letter-spacing: 3px;

@@ -11,7 +11,7 @@ export function LoginPage() {
         <div className="login__brand">
           <Logo />
         </div>
-        <Button variant="ivory" onClick={signIn}>
+        <Button variant="metal" onClick={signIn}>
           Sign in with Google
         </Button>
         {error && <p className="error">{error}</p>}

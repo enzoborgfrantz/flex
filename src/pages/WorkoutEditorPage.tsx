@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Card, NumberField, TextField } from "../components/ui";
 import { RestTimer, type RestTimerState } from "../components/RestTimer";
-import { getExerciseById, muscleGroups, searchExercises } from "../data/exercises";
+import { Button, Card, NumberField, TextField } from "../components/ui";
+import {
+  getExerciseById,
+  muscleGroups,
+  searchExercises,
+} from "../data/exercises";
 import {
   entriesFromTemplate,
   findLastEntry,
@@ -10,6 +14,11 @@ import {
   isReadyToIncrease,
   templateExercisesFromEntries,
 } from "../plans/plans";
+import {
+  clearWorkoutDraft,
+  loadWorkoutDraft,
+  saveWorkoutDraft,
+} from "../storage/workoutDraftStore";
 import { useTemplates } from "../sync/useTemplates";
 import type { Exercise, MuscleGroup } from "../types/exercise";
 import type {
@@ -36,7 +45,11 @@ function createEntry(exercise: Exercise, last?: ExerciseEntry): ExerciseEntry {
     exerciseId: exercise.id,
     name: exercise.name,
     sets: [
-      { reps: lastSet?.reps ?? 8, weightKg: lastSet?.weightKg ?? 0, done: false },
+      {
+        reps: lastSet?.reps ?? 8,
+        weightKg: lastSet?.weightKg ?? 0,
+        done: false,
+      },
     ],
   };
 }
@@ -56,10 +69,24 @@ export function WorkoutEditorPage({
   onSave,
   onCancel,
 }: WorkoutEditorPageProps) {
-  const [date, setDate] = useState(initialSession?.date ?? todayIso());
-  const [entries, setEntries] = useState<ExerciseEntry[]>(
-    initialSession?.exercises ?? [],
+  // A new workout (no initialSession) resumes from a saved draft, if any,
+  // so an accidental refresh or tab close doesn't lose logged sets.
+  const draft = initialSession ? null : loadWorkoutDraft();
+  const [date, setDate] = useState(
+    initialSession?.date ?? draft?.date ?? todayIso(),
   );
+  const [entries, setEntries] = useState<ExerciseEntry[]>(
+    initialSession?.exercises ?? draft?.exercises ?? [],
+  );
+
+  useEffect(() => {
+    if (initialSession) return;
+    if (entries.length === 0) {
+      clearWorkoutDraft();
+      return;
+    }
+    saveWorkoutDraft({ date, exercises: entries });
+  }, [initialSession, date, entries]);
   const [restTimer, setRestTimer] = useState<RestTimerState | null>(null);
 
   const { templates, saveTemplate, deleteTemplate } = useTemplates();
@@ -74,7 +101,9 @@ export function WorkoutEditorPage({
     findLastEntry(history, exerciseId, date, initialSession?.id);
 
   const loadTemplate = (template: WorkoutTemplate) => {
-    setEntries(entriesFromTemplate(template, history, date, initialSession?.id));
+    setEntries(
+      entriesFromTemplate(template, history, date, initialSession?.id),
+    );
   };
 
   const startEditingPlan = (template: WorkoutTemplate) => {
@@ -130,10 +159,13 @@ export function WorkoutEditorPage({
     ? editingPlan.exercises.length > 0 &&
       editingPlan.exercises.every(
         ({ target }) =>
-          target.sets > 0 && target.repsMin > 0 && target.repsMin <= target.repsMax,
+          target.sets > 0 &&
+          target.repsMin > 0 &&
+          target.repsMin <= target.repsMax,
       )
     : entries.length > 0 && entries.every((entry) => entry.sets.length > 0);
-  const canSavePlan = trimmedPlanName !== "" && !planNameTaken && planContentValid;
+  const canSavePlan =
+    trimmedPlanName !== "" && !planNameTaken && planContentValid;
 
   const handleSavePlan = () => {
     if (!canSavePlan) return;
@@ -214,7 +246,9 @@ export function WorkoutEditorPage({
       (current) =>
         current && {
           ...current,
-          exercises: current.exercises.filter((exercise) => exercise.key !== key),
+          exercises: current.exercises.filter(
+            (exercise) => exercise.key !== key,
+          ),
         },
     );
   };
@@ -274,7 +308,11 @@ export function WorkoutEditorPage({
 
   // Ticking a set done starts (or replaces) the rest timer; un-ticking the set
   // that started it cancels it.
-  const toggleSetDone = (entry: ExerciseEntry, setIndex: number, done: boolean) => {
+  const toggleSetDone = (
+    entry: ExerciseEntry,
+    setIndex: number,
+    done: boolean,
+  ) => {
     updateSet(entry.id, setIndex, { done });
     if (done) {
       setRestTimer({
@@ -303,6 +341,7 @@ export function WorkoutEditorPage({
       exercises: entries,
       updatedAt: Date.now(),
     };
+    if (!initialSession) clearWorkoutDraft();
     onSave(session);
   };
 

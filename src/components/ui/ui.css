@@ -86,6 +86,29 @@
   transform: translateY(1px);
 }
 
+/* Metal: brushed pearl/platinum plaque with engraved text, for showcase/hero actions. */
+.ui-button--metal {
+  position: relative;
+  background-image: var(--chrome-gradient-metal);
+  color: var(--chrome-text-metal);
+  text-shadow: var(--chrome-text-shadow-metal-btn);
+  box-shadow: var(--chrome-shadow-metal);
+  transition:
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ui-button--metal:hover:not(:disabled) {
+  filter: brightness(1.05);
+  background-image: var(--chrome-gradient-metal-hover);
+  box-shadow: var(--chrome-shadow-metal-hover);
+}
+
+.ui-button--metal:active:not(:disabled) {
+  background-image: var(--chrome-gradient-metal-active);
+  transform: translateY(1px);
+}
+
 .ui-button--danger {
   color: var(--chrome-text-red);
   text-shadow: var(--chrome-text-shadow-red-btn);
