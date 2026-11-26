@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth, type AuthUser } from "../auth/AuthContext";
+import { CoachSuggestions } from "../components/CoachSuggestions";
 import { Logo } from "../components/Logo";
 import { Button, Card } from "../components/ui";
 import { clearWorkoutDraft, loadWorkoutDraft } from "../storage/workoutDraftStore";
 import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
 import type { WorkoutSession } from "../types/workout";
+import { AiCoachPage } from "./AiCoachPage";
 import { WorkoutDetailPage } from "./WorkoutDetailPage";
 import { WorkoutEditorPage } from "./WorkoutEditorPage";
 
@@ -13,7 +15,8 @@ type View =
   | { name: "new" }
   | { name: "resume-draft" }
   | { name: "edit"; session: WorkoutSession }
-  | { name: "detail"; session: WorkoutSession };
+  | { name: "detail"; session: WorkoutSession }
+  | { name: "ai-coach" };
 
 function SyncDot({
   status,
@@ -121,10 +124,20 @@ export function DashboardPage() {
   const [draft, setDraft] = useState(() => loadWorkoutDraft());
 
   // The draft can change while the editor is open, so refresh it whenever
-  // we land back on the list — that's the only place it's displayed.
+  // we land back on the list — that's the only place it's displayed. The
+  // draft lives in local storage only, so a session saved elsewhere (e.g.
+  // another device) can leave a stale draft behind once it syncs in here —
+  // discard it rather than show a "draft" for a workout that's already saved.
   useEffect(() => {
-    if (view.name === "list") setDraft(loadWorkoutDraft());
-  }, [view]);
+    if (view.name !== "list") return;
+    const current = loadWorkoutDraft();
+    if (current && sessions.some((session) => session.date === current.date)) {
+      clearWorkoutDraft();
+      setDraft(null);
+      return;
+    }
+    setDraft(current);
+  }, [view, sessions]);
 
   const handleSave = (session: WorkoutSession) => {
     saveWorkout(session);
@@ -152,7 +165,11 @@ export function DashboardPage() {
               New workout
             </Button>
             <h1>Past Workouts</h1>
+            <Button variant="secondary" size="sm" onClick={() => setView({ name: "ai-coach" })}>
+              AI Coach
+            </Button>
           </div>
+          <CoachSuggestions sessions={sessions} />
           {sessions.length === 0 && !draft ? (
             <p>No workout sessions yet — start a new one above.</p>
           ) : (
@@ -248,6 +265,10 @@ export function DashboardPage() {
           }}
           onBack={() => setView({ name: "list" })}
         />
+      )}
+
+      {view.name === "ai-coach" && (
+        <AiCoachPage sessions={sessions} onBack={() => setView({ name: "list" })} />
       )}
     </section>
   );

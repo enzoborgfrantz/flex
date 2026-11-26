@@ -19,6 +19,7 @@ import {
   loadWorkoutDraft,
   saveWorkoutDraft,
 } from "../storage/workoutDraftStore";
+import { useAiCoach } from "../sync/useAiCoach";
 import { useTemplates } from "../sync/useTemplates";
 import type { Exercise, MuscleGroup } from "../types/exercise";
 import type {
@@ -101,6 +102,7 @@ export function WorkoutEditorPage({
   const [restTimer, setRestTimer] = useState<RestTimerState | null>(null);
 
   const { templates, saveTemplate, deleteTemplate } = useTemplates();
+  const { weightSuggestions } = useAiCoach(history, templates);
   const [planName, setPlanName] = useState<string | null>(null);
   // Editing a plan works on targets, kept apart from the workout in progress.
   const [editingPlan, setEditingPlan] = useState<{
@@ -587,6 +589,14 @@ export function WorkoutEditorPage({
           <ul className="workout-editor__entries">
             {entries.map((entry, index) => {
               const last = lastEntryFor(entry.exerciseId);
+              const weightSuggestion = weightSuggestions.find(
+                (suggestion) => suggestion.exerciseId === entry.exerciseId,
+              );
+              const nudgeText = weightSuggestion
+                ? `↑ ${weightSuggestion.detail}`
+                : entry.target && last && isReadyToIncrease(last, entry.target.repsMax)
+                  ? `↑ You hit ${entry.target.repsMax} on every set last time — time to go up in weight.`
+                  : null;
               return (
                 <li key={entry.id} className="workout-editor__entry">
                   <div className="workout-editor__entry-header">
@@ -608,14 +618,9 @@ export function WorkoutEditorPage({
                       {last && <span>Last: {formatEntry(last)}</span>}
                     </div>
                   )}
-                  {entry.target &&
-                    last &&
-                    isReadyToIncrease(last, entry.target.repsMax) && (
-                      <p className="workout-editor__nudge">
-                        ↑ You hit {entry.target.repsMax} on every set last time
-                        — time to go up in weight.
-                      </p>
-                    )}
+                  {nudgeText && (
+                    <p className="workout-editor__nudge">{nudgeText}</p>
+                  )}
                   <div className="workout-editor__sets-wrap">
                     <table className="workout-editor__sets">
                       <thead>

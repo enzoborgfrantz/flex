@@ -249,6 +249,43 @@
   white-space: nowrap;
 }
 
+.dashboard__coach-suggestions {
+  width: 100%;
+}
+
+.dashboard__coach-suggestions h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.dashboard__coach-suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashboard__coach-suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard__coach-suggestion p {
+  margin: 0;
+  flex: 1 1 220px;
+}
+
+.dashboard__coach-suggestion-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .dashboard__draft-card {
   position: relative;
   border-color: var(--accent-border);

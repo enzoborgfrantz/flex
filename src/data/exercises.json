@@ -60,7 +60,7 @@
     "equipment": ["bodyweight"],
     "targetMuscle": "back",
     "secondaryMuscles": ["biceps", "shoulders", "forearms"],
-    "restSec": 90
+    "restSec": 120
   },
   {
     "id": "dip",
@@ -69,7 +69,7 @@
     "equipment": ["bodyweight"],
     "targetMuscle": "chest",
     "secondaryMuscles": ["triceps", "shoulders"],
-    "restSec": 90
+    "restSec": 120
   },
   {
     "id": "dumbbell-bench-press",

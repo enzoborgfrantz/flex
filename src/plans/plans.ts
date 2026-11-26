@@ -1,3 +1,5 @@
+import { getExerciseById } from '../data/exercises'
+import type { AiCoachPlanSuggestion } from '../types/aiCoach'
 import type {
   ExerciseEntry,
   ExerciseTarget,
@@ -102,4 +104,50 @@ export function formatEntry(entry: ExerciseEntry): string {
     return `${entry.sets.map((set) => set.reps).join(', ')} @ ${entry.sets[0].weightKg} kg`
   }
   return entry.sets.map((set) => `${set.weightKg} kg × ${set.reps}`).join(', ')
+}
+
+// Deterministic identity for a plan suggestion, computed client-side rather than trusted from
+// the routine's JSON — this is what lets both the UI and config.json's declinedSuggestions agree
+// on "is this the same suggestion" without any LLM-generated id.
+export function planSuggestionKey(suggestion: AiCoachPlanSuggestion): string {
+  return `${suggestion.action}:${suggestion.templateName}:${suggestion.exerciseId}`
+}
+
+function findTemplateExercise(template: WorkoutTemplate | undefined, exerciseId: string): TemplateExercise | undefined {
+  return template?.exercises.find((exercise) => exercise.exerciseId === exerciseId)
+}
+
+// True once the template already reflects the suggestion — this is what lets an accepted
+// suggestion disappear with no separate "accepted" bookkeeping: the template state itself is
+// the record.
+export function isPlanSuggestionSatisfied(template: WorkoutTemplate | undefined, suggestion: AiCoachPlanSuggestion): boolean {
+  const existing = findTemplateExercise(template, suggestion.exerciseId)
+  if (suggestion.action === 'add_exercise') return Boolean(existing)
+  return Boolean(
+    existing &&
+      existing.target.sets === suggestion.target.sets &&
+      existing.target.repsMin === suggestion.target.repsMin &&
+      existing.target.repsMax === suggestion.target.repsMax,
+  )
+}
+
+// Idempotency guard baked in: applying 'add_exercise' twice (e.g. two tabs racing) never
+// duplicates the exercise, independent of how fast device sync catches up.
+export function applyPlanSuggestion(template: WorkoutTemplate, suggestion: AiCoachPlanSuggestion): TemplateExercise[] {
+  if (suggestion.action === 'add_exercise') {
+    if (findTemplateExercise(template, suggestion.exerciseId)) return template.exercises
+    const exercise = getExerciseById(suggestion.exerciseId)
+    return [
+      ...template.exercises,
+      {
+        exerciseId: suggestion.exerciseId,
+        name: exercise?.name ?? suggestion.exerciseId,
+        target: suggestion.target,
+        startWeightKg: suggestion.startWeightKg ?? 0,
+      },
+    ]
+  }
+  return template.exercises.map((exercise) =>
+    exercise.exerciseId === suggestion.exerciseId ? { ...exercise, target: suggestion.target } : exercise,
+  )
 }
