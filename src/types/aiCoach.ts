@@ -1,4 +1,4 @@
-import type { MuscleGroup } from './exercise'
+import type { Equipment, MuscleGroup } from './exercise'
 
 // What we export for the AI coach to read — not the app's own workout/template
 // shapes verbatim, just enough to analyze training without re-deriving exercise metadata.
@@ -6,7 +6,19 @@ export interface AiCoachSnapshot {
   generatedAt: string
   // The full exercise catalog (not just ones the user has logged), so the coach has a stable id
   // for anything it might want to newly recommend, e.g. a muscle group never trained before.
-  exercises: Record<string, { name: string; category: 'compound' | 'isolation'; targetMuscle: MuscleGroup; secondaryMuscles: MuscleGroup[] }>
+  // `equipment` is required to perform the exercise at all; `optionalEquipment` only makes it
+  // harder (e.g. a weight belt) — see Exercise in types/exercise.ts for the same distinction.
+  exercises: Record<
+    string,
+    {
+      name: string
+      category: 'compound' | 'isolation'
+      targetMuscle: MuscleGroup
+      secondaryMuscles: MuscleGroup[]
+      equipment: Equipment[]
+      optionalEquipment?: Equipment[]
+    }
+  >
   workouts: Array<{
     date: string
     notes?: string
@@ -37,6 +49,11 @@ export interface AiCoachConfig {
   // propose the same one (same `key`) again. Accepted suggestions need no entry here: applying
   // one edits the template directly, and the coach sees that reflected in the next snapshot.
   declinedSuggestions?: AiCoachDeclinedSuggestion[]
+  // Mirrors the app's local equipment selection (src/storage/equipmentStore.ts) so the routine
+  // can see it — that store stays the source of truth and works offline/signed-out, this is a
+  // one-way, last-write-wins copy pushed up whenever it changes. Missing/empty means the user
+  // hasn't set one, i.e. assume full gym access rather than "has nothing".
+  equipment?: Equipment[]
 }
 
 // Read back from the newest "report-*.md" file the Claude routine created — it never edits an

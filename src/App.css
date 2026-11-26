@@ -19,13 +19,6 @@
     align-items: stretch;
   }
 
-  .dashboard__toolbar h1 {
-    font-size: 20px;
-    letter-spacing: 1.5px;
-    margin: 0;
-    white-space: nowrap;
-  }
-
   .dashboard__toolbar .ui-button {
     width: 100%;
   }
@@ -210,12 +203,59 @@
   }
 }
 
-.dashboard__toolbar h1 {
+.dashboard__section-heading {
+  width: 100%;
   margin: 0;
+  font-size: 16px;
+  text-align: left;
+}
 
-  @media (min-width: 481px) {
-    font-size: 24px;
-  }
+.dashboard__equipment {
+  width: 100%;
+}
+
+.dashboard__equipment h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.dashboard__equipment-hint {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dashboard__equipment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dashboard__equipment-chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.dashboard__equipment-chip:hover {
+  color: var(--bone);
+}
+
+.dashboard__equipment-chip--active {
+  background: var(--label-red);
+  color: var(--bone);
+  box-shadow: none;
 }
 
 .dashboard__sessions {
@@ -249,13 +289,91 @@
   white-space: nowrap;
 }
 
-.dashboard__coach-suggestions {
+.dashboard__plan-section {
   width: 100%;
 }
 
-.dashboard__coach-suggestions h2 {
+.dashboard__plan-section h2 {
   margin: 0 0 10px;
   font-size: 16px;
+}
+
+.dashboard__plans-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dashboard__plans-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard__plan-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard__plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
+}
+
+.dashboard__plan-row strong {
+  color: var(--bone);
+  font-size: 14px;
+}
+
+.dashboard__plan-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.dashboard__plan-row-meta span {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dashboard__plan-icon-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  padding: 2px;
+  font-family: var(--heading);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dashboard__plan-icon-btn--edit {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.dashboard__plan-icon-btn--edit:hover {
+  color: var(--bone);
+}
+
+.dashboard__plan-icon-btn--delete {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dashboard__plan-icon-btn--delete:hover {
+  color: var(--label-red);
 }
 
 .dashboard__coach-suggestions-list {
@@ -265,6 +383,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Nested under the plan row it applies to, so the tie between a suggestion
+   and its plan reads visually, not just from the sentence itself. */
+.dashboard__coach-suggestions-list--nested {
+  padding-left: 14px;
+  margin-left: 4px;
+  border-left: 2px solid var(--accent-border);
 }
 
 .dashboard__coach-suggestion {

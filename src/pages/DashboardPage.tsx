@@ -3,9 +3,12 @@ import { useAuth, type AuthUser } from "../auth/AuthContext";
 import { CoachSuggestions } from "../components/CoachSuggestions";
 import { Logo } from "../components/Logo";
 import { Button, Card } from "../components/ui";
+import { equipmentOptions } from "../data/equipment";
 import { clearWorkoutDraft, loadWorkoutDraft } from "../storage/workoutDraftStore";
+import { useEquipment } from "../storage/useEquipment";
+import { useTemplates } from "../sync/useTemplates";
 import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
-import type { WorkoutSession } from "../types/workout";
+import type { WorkoutSession, WorkoutTemplate } from "../types/workout";
 import { AiCoachPage } from "./AiCoachPage";
 import { WorkoutDetailPage } from "./WorkoutDetailPage";
 import { WorkoutEditorPage } from "./WorkoutEditorPage";
@@ -15,6 +18,7 @@ type View =
   | { name: "new" }
   | { name: "resume-draft" }
   | { name: "edit"; session: WorkoutSession }
+  | { name: "edit-plan"; template: WorkoutTemplate }
   | { name: "detail"; session: WorkoutSession }
   | { name: "ai-coach" };
 
@@ -120,6 +124,8 @@ export function DashboardPage() {
   const { user, signOut } = useAuth();
   const { sessions, saveWorkout, deleteWorkout, syncStatus, retrySync } =
     useWorkouts();
+  const { equipment, toggleEquipment } = useEquipment();
+  const { templates, saveTemplate, deleteTemplate } = useTemplates();
   const [view, setView] = useState<View>({ name: "list" });
   const [draft, setDraft] = useState(() => loadWorkoutDraft());
 
@@ -164,12 +170,40 @@ export function DashboardPage() {
             <Button variant="metal" onClick={() => setView({ name: "new" })}>
               New workout
             </Button>
-            <h1>Past Workouts</h1>
             <Button variant="secondary" size="sm" onClick={() => setView({ name: "ai-coach" })}>
               AI Coach
             </Button>
           </div>
-          <CoachSuggestions sessions={sessions} />
+          <Card className="dashboard__equipment">
+            <h2>Your equipment</h2>
+            <p className="dashboard__equipment-hint">
+              What you've got access to — tap to toggle. Nothing selected means everything's assumed available.
+            </p>
+            <div className="dashboard__equipment-chips" role="group" aria-label="Equipment you have access to">
+              {equipmentOptions.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`dashboard__equipment-chip${
+                    equipment.includes(id) ? " dashboard__equipment-chip--active" : ""
+                  }`}
+                  aria-pressed={equipment.includes(id)}
+                  onClick={() => toggleEquipment(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </Card>
+          <CoachSuggestions
+            sessions={sessions}
+            equipment={equipment}
+            templates={templates}
+            saveTemplate={saveTemplate}
+            deleteTemplate={deleteTemplate}
+            onEditPlan={(template) => setView({ name: "edit-plan", template })}
+          />
+          <h2 className="dashboard__section-heading">Past workouts</h2>
           {sessions.length === 0 && !draft ? (
             <p>No workout sessions yet — start a new one above.</p>
           ) : (
@@ -232,6 +266,9 @@ export function DashboardPage() {
       {view.name === "new" && (
         <WorkoutEditorPage
           history={sessions}
+          templates={templates}
+          saveTemplate={saveTemplate}
+          deleteTemplate={deleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}
         />
@@ -241,6 +278,9 @@ export function DashboardPage() {
         <WorkoutEditorPage
           startFromDraft
           history={sessions}
+          templates={templates}
+          saveTemplate={saveTemplate}
+          deleteTemplate={deleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}
         />
@@ -250,8 +290,23 @@ export function DashboardPage() {
         <WorkoutEditorPage
           initialSession={view.session}
           history={sessions}
+          templates={templates}
+          saveTemplate={saveTemplate}
+          deleteTemplate={deleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "detail", session: view.session })}
+        />
+      )}
+
+      {view.name === "edit-plan" && (
+        <WorkoutEditorPage
+          initialEditingTemplate={view.template}
+          history={sessions}
+          templates={templates}
+          saveTemplate={saveTemplate}
+          deleteTemplate={deleteTemplate}
+          onSave={() => setView({ name: "list" })}
+          onCancel={() => setView({ name: "list" })}
         />
       )}
 
@@ -268,7 +323,7 @@ export function DashboardPage() {
       )}
 
       {view.name === "ai-coach" && (
-        <AiCoachPage sessions={sessions} onBack={() => setView({ name: "list" })} />
+        <AiCoachPage sessions={sessions} templates={templates} onBack={() => setView({ name: "list" })} />
       )}
     </section>
   );

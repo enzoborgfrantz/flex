@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Badge, Button, Card } from '../components/ui'
 import { SimpleMarkdown } from '../components/SimpleMarkdown'
+import { useEquipment } from '../storage/useEquipment'
 import { buildAiCoachSetupPrompt } from '../sync/aiCoachPrompt'
 import { useAiCoach } from '../sync/useAiCoach'
-import { useTemplates } from '../sync/useTemplates'
-import type { WorkoutSession } from '../types/workout'
+import type { WorkoutSession, WorkoutTemplate } from '../types/workout'
 import './AiCoachPage.css'
 
 const STALE_AFTER_MS = 10 * 24 * 60 * 60 * 1000
@@ -24,12 +24,17 @@ function timeAgo(iso: string): string {
 
 interface AiCoachPageProps {
   sessions: WorkoutSession[]
+  templates: WorkoutTemplate[]
   onBack: () => void
 }
 
-export function AiCoachPage({ sessions, onBack }: AiCoachPageProps) {
-  const { templates } = useTemplates()
-  const { config, report, status, saveNotes, refreshReport, resetConnection } = useAiCoach(sessions, templates)
+export function AiCoachPage({ sessions, templates, onBack }: AiCoachPageProps) {
+  const { equipment } = useEquipment()
+  const { config, report, status, saveNotes, refreshReport, resetConnection } = useAiCoach(
+    sessions,
+    templates,
+    equipment,
+  )
   const [notesDraft, setNotesDraft] = useState('')
   const [copied, setCopied] = useState(false)
   const [setupExpanded, setSetupExpanded] = useState(false)
@@ -148,7 +153,9 @@ export function AiCoachPage({ sessions, onBack }: AiCoachPageProps) {
                 )}
                 {hasReport && (
                   <p className="ai-coach__hint">
-                    Re-running this prompt is safe — it updates the existing routine instead of duplicating it.
+                    You shouldn't need to run this again — the coach picks up app updates on its own. Re-running it
+                    is still safe if something's not working; it updates the existing routine instead of duplicating
+                    it.
                   </p>
                 )}
               </>

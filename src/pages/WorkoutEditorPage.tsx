@@ -19,8 +19,8 @@ import {
   loadWorkoutDraft,
   saveWorkoutDraft,
 } from "../storage/workoutDraftStore";
+import { useEquipment } from "../storage/useEquipment";
 import { useAiCoach } from "../sync/useAiCoach";
-import { useTemplates } from "../sync/useTemplates";
 import type { Exercise, MuscleGroup } from "../types/exercise";
 import type {
   ExerciseEntry,
@@ -62,7 +62,13 @@ interface WorkoutEditorPageProps {
   // Resumes the saved draft, if any — used only by the dashboard's Draft
   // card. A plain "New workout" always starts blank.
   startFromDraft?: boolean;
+  // Jumps straight into "Edit plan" for this template — used by the dashboard's
+  // Workout Plans section, which has no "new workout" screen to fall back to.
+  initialEditingTemplate?: WorkoutTemplate;
   history: WorkoutSession[];
+  templates: WorkoutTemplate[];
+  saveTemplate: (name: string, exercises: TemplateExercise[], id?: string) => void;
+  deleteTemplate: (id: string) => void;
   onSave: (session: WorkoutSession) => void;
   onCancel: () => void;
 }
@@ -70,7 +76,11 @@ interface WorkoutEditorPageProps {
 export function WorkoutEditorPage({
   initialSession,
   startFromDraft,
+  initialEditingTemplate,
   history,
+  templates,
+  saveTemplate,
+  deleteTemplate,
   onSave,
   onCancel,
 }: WorkoutEditorPageProps) {
@@ -101,14 +111,27 @@ export function WorkoutEditorPage({
   }, [initialSession, date, entries]);
   const [restTimer, setRestTimer] = useState<RestTimerState | null>(null);
 
-  const { templates, saveTemplate, deleteTemplate } = useTemplates();
-  const { weightSuggestions } = useAiCoach(history, templates);
-  const [planName, setPlanName] = useState<string | null>(null);
+  const { equipment } = useEquipment();
+  const { weightSuggestions } = useAiCoach(history, templates, equipment);
+  const [planName, setPlanName] = useState<string | null>(
+    initialEditingTemplate?.name ?? null,
+  );
   // Editing a plan works on targets, kept apart from the workout in progress.
   const [editingPlan, setEditingPlan] = useState<{
     id: string;
     exercises: PlanDraftExercise[];
-  } | null>(null);
+  } | null>(() =>
+    initialEditingTemplate
+      ? {
+          id: initialEditingTemplate.id,
+          exercises: initialEditingTemplate.exercises.map((exercise) => ({
+            ...exercise,
+            target: { ...exercise.target },
+            key: crypto.randomUUID(),
+          })),
+        }
+      : null,
+  );
 
   const lastEntryFor = (exerciseId: string) =>
     findLastEntry(history, exerciseId, date, initialSession?.id);
@@ -132,6 +155,12 @@ export function WorkoutEditorPage({
   };
 
   const stopEditingPlan = () => {
+    // Entered directly from the dashboard's Workout Plans section — there's no "pick a
+    // different plan" list to fall back to here, so leave the editor entirely.
+    if (initialEditingTemplate) {
+      onCancel();
+      return;
+    }
     setEditingPlan(null);
     setPlanName(null);
   };

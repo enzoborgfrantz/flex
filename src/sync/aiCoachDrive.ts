@@ -16,6 +16,12 @@ const DRIVE_UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files'
 export const AI_COACH_FOLDER_NAME = 'Flex AI Coach'
 export const AI_COACH_SNAPSHOT_FILE_NAME = 'snapshot.json'
 export const AI_COACH_CONFIG_FILE_NAME = 'config.json'
+// The routine's actual task logic, as plain text — kept out of the Routine's own frozen
+// instructions (see aiCoachPrompt.ts) and pushed here by the app instead, so updating it is a
+// normal app change (ships to every signed-in device automatically) rather than something each
+// user has to re-paste a setup prompt to pick up. The Routine's own instructions just say "go
+// re-read this file every time and do what it currently says."
+export const AI_COACH_INSTRUCTIONS_FILE_NAME = 'instructions.md'
 // Reports are *created* by the Claude routine, one per run, named "report-<date>.md" — never
 // overwritten in place. Its Drive connector can only create files or edit metadata, not rewrite
 // an existing file's content (and especially not one it didn't create), so a fixed, app-owned
@@ -27,6 +33,7 @@ export const AI_COACH_REPORT_FILES_TO_KEEP = 4
 const FOLDER_ID_KEY = 'flex.ai-coach.folder-id'
 const SNAPSHOT_FILE_ID_KEY = 'flex.ai-coach.snapshot-file-id'
 const CONFIG_FILE_ID_KEY = 'flex.ai-coach.config-file-id'
+const INSTRUCTIONS_FILE_ID_KEY = 'flex.ai-coach.instructions-file-id'
 
 async function findChild(accessToken: string, name: string, parentId: string, mimeType?: string): Promise<string | null> {
   const q = [`name = '${name}'`, `'${parentId}' in parents`, 'trashed = false', mimeType && `mimeType = '${mimeType}'`]
@@ -114,6 +121,7 @@ export function resetAiCoachDriveCache(): void {
   localStorage.removeItem(FOLDER_ID_KEY)
   localStorage.removeItem(SNAPSHOT_FILE_ID_KEY)
   localStorage.removeItem(CONFIG_FILE_ID_KEY)
+  localStorage.removeItem(INSTRUCTIONS_FILE_ID_KEY)
 }
 
 async function resolveFolderId(accessToken: string): Promise<string> {
@@ -127,12 +135,18 @@ async function resolveFolderId(accessToken: string): Promise<string> {
 // Ensures a file this app owns exists, creating it with `initialContent` the first time. Once
 // created, our drive.file grant keeps covering it even after another app (a Claude routine)
 // edits its content later — the grant is tied to who created the file, not who last wrote it.
-async function resolveOwnedFileId(accessToken: string, name: string, cacheKey: string, initialContent: string): Promise<string> {
+async function resolveOwnedFileId(
+  accessToken: string,
+  name: string,
+  cacheKey: string,
+  initialContent: string,
+  mimeType = 'application/json',
+): Promise<string> {
   const folderId = await resolveFolderId(accessToken)
   return resolveCachedId(
     cacheKey,
     () => findChild(accessToken, name, folderId),
-    () => createFile(accessToken, name, folderId, initialContent, 'application/json'),
+    () => createFile(accessToken, name, folderId, initialContent, mimeType),
   )
 }
 
@@ -146,6 +160,8 @@ export function buildSnapshot(sessions: WorkoutSession[], templates: WorkoutTemp
       category: exercise.category,
       targetMuscle: exercise.targetMuscle,
       secondaryMuscles: exercise.secondaryMuscles,
+      equipment: exercise.equipment,
+      ...(exercise.optionalEquipment ? { optionalEquipment: exercise.optionalEquipment } : {}),
     }
   }
 
@@ -198,6 +214,21 @@ export async function pushConfig(accessToken: string, config: AiCoachConfig): Pr
   const content = JSON.stringify(config, null, 2)
   const fileId = await resolveOwnedFileId(accessToken, AI_COACH_CONFIG_FILE_NAME, CONFIG_FILE_ID_KEY, content)
   await writeContent(accessToken, fileId, content, 'application/json')
+}
+
+// Refreshes the routine's actual task logic to whatever this build of the app currently says
+// (see buildAiCoachInstructions in aiCoachPrompt.ts) — called on every sign-in (see useAiCoach),
+// so opening the app on an updated build is all it takes for existing routines to pick up new
+// behavior on their next run, no re-setup needed.
+export async function pushInstructions(accessToken: string, content: string): Promise<void> {
+  const fileId = await resolveOwnedFileId(
+    accessToken,
+    AI_COACH_INSTRUCTIONS_FILE_NAME,
+    INSTRUCTIONS_FILE_ID_KEY,
+    content,
+    'text/markdown',
+  )
+  await writeContent(accessToken, fileId, content, 'text/markdown')
 }
 
 // Newest first, since that's the one the app should read. The routine writes both a

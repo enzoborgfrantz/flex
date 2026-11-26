@@ -117,9 +117,10 @@ function findTemplateExercise(template: WorkoutTemplate | undefined, exerciseId:
   return template?.exercises.find((exercise) => exercise.exerciseId === exerciseId)
 }
 
-// True once the template already reflects the suggestion — this is what lets an accepted
-// suggestion disappear with no separate "accepted" bookkeeping: the template state itself is
-// the record.
+// True once the template already reflects the suggestion. Note this flips back to false if the
+// exercise is later removed again — accepting now also writes a permanent 'never' decline (see
+// CoachSuggestions' handleAccept) specifically so that case doesn't make the suggestion resurface
+// as if it were new.
 export function isPlanSuggestionSatisfied(template: WorkoutTemplate | undefined, suggestion: AiCoachPlanSuggestion): boolean {
   const existing = findTemplateExercise(template, suggestion.exerciseId)
   if (suggestion.action === 'add_exercise') return Boolean(existing)

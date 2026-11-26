@@ -8,6 +8,7 @@ import type {
   AiCoachReport,
   AiCoachWeightSuggestion,
 } from '../types/aiCoach'
+import type { Equipment } from '../types/exercise'
 import type { WorkoutSession, WorkoutTemplate } from '../types/workout'
 import {
   buildSnapshot,
@@ -15,9 +16,11 @@ import {
   pullLatestCoachInsights,
   pullLatestReport,
   pushConfig,
+  pushInstructions,
   pushSnapshot,
   resetAiCoachDriveCache,
 } from './aiCoachDrive'
+import { buildAiCoachInstructions } from './aiCoachPrompt'
 
 const SNAPSHOT_PUSH_DEBOUNCE_MS = 1500
 const CACHE_KEY = 'flex.ai-coach.cache'
@@ -52,7 +55,7 @@ function saveCache(cache: AiCoachCache): void {
   }
 }
 
-export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplate[]) {
+export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplate[], equipment: Equipment[]) {
   const { accessToken } = useAuth()
   const [config, setConfig] = useState<AiCoachConfig | null>(null)
   const [report, setReport] = useState<AiCoachReport | null>(() => loadCache().report)
@@ -111,6 +114,10 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
         setStatus('ready')
       })
       .catch(() => setStatus('error'))
+    // Refreshes the routine's task logic to whatever this build says (see aiCoachPrompt.ts) —
+    // the whole point is that opening the app on a newer build is enough to update already-set-up
+    // routines by their next scheduled run, with nobody re-pasting a setup prompt.
+    pushInstructions(accessToken, buildAiCoachInstructions()).catch(() => {})
   }, [accessToken, reloadToken])
 
   // Keep the Drive snapshot in sync with local workout/template data so the routine always
@@ -126,6 +133,20 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
     }
   }, [accessToken, sessions, templates, reloadToken])
 
+  // Mirrors the real equipment selection (synced separately via useEquipment/equipmentDriveFile,
+  // in the hidden appDataFolder the coach's own Drive connector can't see) into config.json so
+  // the routine can read it. One-way, and only once config has loaded — otherwise this would
+  // fire before the real notes/declinedSuggestions arrive and push a blank config over them.
+  useEffect(() => {
+    if (!accessToken || !config) return
+    const current = config.equipment ?? []
+    const same = current.length === equipment.length && current.every((id) => equipment.includes(id))
+    if (same) return
+    const next: AiCoachConfig = { ...config, equipment, updatedAt: Date.now() }
+    setConfig(next)
+    pushConfig(accessToken, next).catch(() => {})
+  }, [accessToken, config, equipment])
+
   const saveNotes = useCallback(
     (notes: string) => {
       if (!accessToken) return
@@ -139,8 +160,11 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
   )
 
   // Declines go to config.json (not applied anywhere locally) so the routine itself stops
-  // proposing the same suggestion — accepted suggestions need no equivalent, since applying one
-  // edits the template directly and the coach sees that in the next snapshot.
+  // proposing the same suggestion. Also used to mark an *accepted* suggestion as handled for
+  // good (status 'never') — isPlanSuggestionSatisfied only reflects whether the template
+  // currently has it, so without this, manually removing an exercise you'd previously accepted
+  // (e.g. after realizing you don't have the equipment for it) makes it look "pending" again and
+  // resurface as if it were a brand new suggestion.
   const declineSuggestion = useCallback(
     (suggestion: AiCoachPlanSuggestion, status: AiCoachDeclineStatus) => {
       if (!accessToken) return
@@ -148,6 +172,7 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
       const decidedAt = Date.now()
       setConfig((current) => {
         const next: AiCoachConfig = {
+          ...current,
           notes: current?.notes ?? '',
           updatedAt: decidedAt,
           declinedSuggestions: [
@@ -170,6 +195,25 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
     [accessToken],
   )
 
+  // Reverses declineSuggestion — used to undo the implicit 'never' it's given alongside an
+  // Accept, so clicking Undo really does put things back as if Accept had never happened.
+  const undeclineSuggestion = useCallback(
+    (key: string) => {
+      if (!accessToken) return
+      setConfig((current) => {
+        const next: AiCoachConfig = {
+          ...current,
+          notes: current?.notes ?? '',
+          updatedAt: Date.now(),
+          declinedSuggestions: (current?.declinedSuggestions ?? []).filter((declined) => declined.key !== key),
+        }
+        pushConfig(accessToken, next).catch(() => {})
+        return next
+      })
+    },
+    [accessToken],
+  )
+
   return {
     config,
     report,
@@ -178,6 +222,7 @@ export function useAiCoach(sessions: WorkoutSession[], templates: WorkoutTemplat
     status,
     saveNotes,
     declineSuggestion,
+    undeclineSuggestion,
     refreshReport,
     resetConnection,
   }

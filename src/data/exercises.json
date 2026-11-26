@@ -3,7 +3,7 @@
     "id": "barbell-back-squat",
     "name": "Barbell Back Squat",
     "category": "compound",
-    "equipment": ["barbell"],
+    "equipment": ["barbell", "squat-rack"],
     "targetMuscle": "quads",
     "secondaryMuscles": ["glutes", "hamstrings", "core"],
     "restSec": 180
@@ -21,7 +21,7 @@
     "id": "barbell-bench-press",
     "name": "Barbell Bench Press",
     "category": "compound",
-    "equipment": ["barbell"],
+    "equipment": ["barbell", "bench"],
     "targetMuscle": "chest",
     "secondaryMuscles": ["shoulders", "triceps"],
     "restSec": 150
@@ -30,7 +30,7 @@
     "id": "barbell-overhead-press",
     "name": "Barbell Overhead Press",
     "category": "compound",
-    "equipment": ["barbell"],
+    "equipment": ["barbell", "squat-rack"],
     "targetMuscle": "shoulders",
     "secondaryMuscles": ["triceps", "core"],
     "restSec": 150
@@ -48,7 +48,8 @@
     "id": "pull-up",
     "name": "Pull-Up",
     "category": "compound",
-    "equipment": ["bodyweight"],
+    "equipment": ["pull-up-bar"],
+    "optionalEquipment": ["weight-belt"],
     "targetMuscle": "back",
     "secondaryMuscles": ["biceps", "forearms"],
     "restSec": 180
@@ -57,7 +58,7 @@
     "id": "inverted-row",
     "name": "Inverted Row",
     "category": "compound",
-    "equipment": ["bodyweight"],
+    "equipment": ["squat-rack", "smith-machine"],
     "targetMuscle": "back",
     "secondaryMuscles": ["biceps", "shoulders", "forearms"],
     "restSec": 120
@@ -66,7 +67,8 @@
     "id": "dip",
     "name": "Dip",
     "category": "compound",
-    "equipment": ["bodyweight"],
+    "equipment": ["dip-bar"],
+    "optionalEquipment": ["weight-belt"],
     "targetMuscle": "chest",
     "secondaryMuscles": ["triceps", "shoulders"],
     "restSec": 120
@@ -75,7 +77,7 @@
     "id": "dumbbell-bench-press",
     "name": "Dumbbell Bench Press",
     "category": "compound",
-    "equipment": ["dumbbell"],
+    "equipment": ["dumbbell", "bench"],
     "targetMuscle": "chest",
     "secondaryMuscles": ["shoulders", "triceps"],
     "restSec": 120
@@ -210,7 +212,7 @@
     "id": "hanging-leg-raise",
     "name": "Hanging Leg Raise",
     "category": "isolation",
-    "equipment": ["bodyweight"],
+    "equipment": ["pull-up-bar"],
     "targetMuscle": "core",
     "secondaryMuscles": ["forearms"],
     "restSec": 60
@@ -246,7 +248,7 @@
     "id": "barbell-hip-thrust",
     "name": "Barbell Hip Thrust",
     "category": "compound",
-    "equipment": ["barbell"],
+    "equipment": ["barbell", "bench"],
     "targetMuscle": "glutes",
     "secondaryMuscles": ["hamstrings"],
     "restSec": 120
@@ -255,7 +257,7 @@
     "id": "incline-dumbbell-press",
     "name": "Incline Dumbbell Press",
     "category": "compound",
-    "equipment": ["dumbbell"],
+    "equipment": ["dumbbell", "bench"],
     "targetMuscle": "chest",
     "secondaryMuscles": ["shoulders", "triceps"],
     "restSec": 120

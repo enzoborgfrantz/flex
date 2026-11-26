@@ -1,3 +1,4 @@
+import type { Equipment } from '../types/exercise'
 import type { WorkoutSession, WorkoutTemplate } from '../types/workout'
 
 const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files'
@@ -95,4 +96,11 @@ export const workoutsDriveFile = createDriveAppDataFile<WorkoutSession>('flex-wo
 export const templatesDriveFile = createDriveAppDataFile<WorkoutTemplate>(
   'flex-templates.json',
   'flex.drive-templates-file-id',
+)
+
+// A flat set, not a collection of independently-timestamped records — pushed/pulled as one
+// whole array rather than merged item-by-item the way useSyncedCollection does for the above.
+export const equipmentDriveFile = createDriveAppDataFile<Equipment>(
+  'flex-equipment.json',
+  'flex.drive-equipment-file-id',
 )

@@ -17,7 +17,13 @@ export function searchExercises({ query, muscle, equipment }: ExerciseFilter): E
   const normalizedQuery = query?.trim().toLowerCase()
   return exercises.filter((exercise) => {
     if (muscle && muscle !== 'all' && exercise.targetMuscle !== muscle) return false
-    if (equipment && equipment !== 'all' && !exercise.equipment.includes(equipment)) return false
+    if (
+      equipment &&
+      equipment !== 'all' &&
+      !exercise.equipment.includes(equipment) &&
+      !exercise.optionalEquipment?.includes(equipment)
+    )
+      return false
     if (normalizedQuery && !exercise.name.toLowerCase().includes(normalizedQuery)) return false
     return true
   })
@@ -47,4 +53,11 @@ export const equipmentTypes: Equipment[] = [
   'kettlebell',
   'bands',
   'harness',
+  'pull-up-bar',
+  'dip-bar',
+  'bench',
+  'squat-rack',
+  'smith-machine',
+  'ez-bar',
+  'weight-belt',
 ]
