@@ -223,6 +223,43 @@
   outline-offset: 1px;
 }
 
+/* Collapsible: a Card whose title doubles as a tap target to expand/collapse the body. */
+
+.ui-collapsible__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.ui-collapsible__header:hover {
+  box-shadow: none;
+}
+
+.ui-collapsible__title {
+  margin: 0;
+}
+
+.ui-collapsible__chevron {
+  flex-shrink: 0;
+  color: var(--label-red);
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+.ui-collapsible__header[aria-expanded='false'] .ui-collapsible__chevron {
+  transform: rotate(-90deg);
+}
+
+.ui-collapsible__body {
+  margin-top: 12px;
+}
+
 /* Badge */
 
 .ui-badge {

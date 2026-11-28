@@ -2,7 +2,6 @@ import { getExerciseById } from '../data/exercises'
 import type { AiCoachPlanSuggestion } from '../types/aiCoach'
 import type {
   ExerciseEntry,
-  ExerciseTarget,
   SetEntry,
   TemplateExercise,
   WorkoutSession,
@@ -94,18 +93,6 @@ export function isReadyToIncrease(last: ExerciseEntry, repsMax: number): boolean
   )
 }
 
-export function formatTarget({ sets, repsMin, repsMax }: ExerciseTarget): string {
-  return `${sets} × ${repsMin === repsMax ? repsMin : `${repsMin}–${repsMax}`}`
-}
-
-export function formatEntry(entry: ExerciseEntry): string {
-  const weights = new Set(entry.sets.map((set) => set.weightKg))
-  if (weights.size === 1) {
-    return `${entry.sets.map((set) => set.reps).join(', ')} @ ${entry.sets[0].weightKg} kg`
-  }
-  return entry.sets.map((set) => `${set.weightKg} kg × ${set.reps}`).join(', ')
-}
-
 // Deterministic identity for a plan suggestion, computed client-side rather than trusted from
 // the routine's JSON — this is what lets both the UI and config.json's declinedSuggestions agree
 // on "is this the same suggestion" without any LLM-generated id.
@@ -151,4 +138,51 @@ export function applyPlanSuggestion(template: WorkoutTemplate, suggestion: AiCoa
   return template.exercises.map((exercise) =>
     exercise.exerciseId === suggestion.exerciseId ? { ...exercise, target: suggestion.target } : exercise,
   )
+}
+
+// The active rotation: an ordered sequence of slots, each naming a template id. Slots may repeat
+// a template (e.g. A-B-B-A) — that's why the sequence is tracked by slot position rather than by
+// deduplicated membership.
+export function addRotationSlot(rotation: string[], templateId: string): string[] {
+  return [...rotation, templateId]
+}
+
+export function removeRotationSlot(rotation: string[], index: number): string[] {
+  return rotation.filter((_, i) => i !== index)
+}
+
+export function setRotationSlot(rotation: string[], index: number, templateId: string): string[] {
+  return rotation.map((id, i) => (i === index ? templateId : id))
+}
+
+export function moveRotationSlot(rotation: string[], index: number, direction: -1 | 1): string[] {
+  const target = index + direction
+  if (target < 0 || target >= rotation.length) return rotation
+  const next = [...rotation]
+  ;[next[index], next[target]] = [next[target], next[index]]
+  return next
+}
+
+// Called when a template is deleted so any rotation slots pointing at it don't dangle.
+export function removeTemplateFromRotation(rotation: string[], templateId: string): string[] {
+  return rotation.filter((id) => id !== templateId)
+}
+
+// "Next" = the slot after whichever one was last actually completed through the rotation
+// (sessions.planSlotIndex), independent of plain custom/manually-picked workouts logged since —
+// those never carry planSlotIndex, so they're invisible here. Falls back to slot 0 if nothing's
+// been logged through the rotation yet, or if the stamped index no longer fits a shortened
+// rotation.
+export function nextRotationSlot(
+  rotation: string[],
+  sessions: WorkoutSession[],
+): { templateId: string; slotIndex: number } | null {
+  if (rotation.length === 0) return null
+  const last = sessions.find((session) => session.planSlotIndex !== undefined)
+  const lastIndex = last?.planSlotIndex
+  const slotIndex =
+    lastIndex !== undefined && lastIndex >= 0 && lastIndex < rotation.length
+      ? (lastIndex + 1) % rotation.length
+      : 0
+  return { templateId: rotation[slotIndex], slotIndex }
 }

@@ -26,6 +26,10 @@ export interface WorkoutSession {
   exercises: ExerciseEntry[]
   notes?: string
   updatedAt: number
+  // Set only when this session was started from the dashboard's "Next up" rotation card —
+  // never for a manually-picked template or a fully custom workout. See nextRotationSlot
+  // in plans/plans.ts: this is the only signal the rotation pointer advances on.
+  planSlotIndex?: number
 }
 
 export interface TemplateExercise {

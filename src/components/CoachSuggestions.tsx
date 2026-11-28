@@ -1,10 +1,18 @@
 import { useState } from 'react'
-import { applyPlanSuggestion, isPlanSuggestionSatisfied, planSuggestionKey } from '../plans/plans'
+import {
+  addRotationSlot,
+  applyPlanSuggestion,
+  isPlanSuggestionSatisfied,
+  moveRotationSlot,
+  planSuggestionKey,
+  removeRotationSlot,
+  setRotationSlot,
+} from '../plans/plans'
 import { useAiCoach } from '../sync/useAiCoach'
 import type { AiCoachDeclinedSuggestion, AiCoachPlanSuggestion } from '../types/aiCoach'
 import type { Equipment } from '../types/exercise'
 import type { TemplateExercise, WorkoutSession, WorkoutTemplate } from '../types/workout'
-import { Button, Card } from './ui'
+import { Button, Card, Collapsible, Select } from './ui'
 
 function isHidden(declined: AiCoachDeclinedSuggestion | undefined): boolean {
   if (!declined) return false
@@ -26,6 +34,8 @@ interface WorkoutPlansSectionProps {
   templates: WorkoutTemplate[]
   saveTemplate: (name: string, exercises: TemplateExercise[], id?: string) => void
   deleteTemplate: (id: string) => void
+  rotation: string[]
+  setRotation: (next: string[]) => void
   onEditPlan: (template: WorkoutTemplate) => void
 }
 
@@ -39,6 +49,8 @@ export function CoachSuggestions({
   templates,
   saveTemplate,
   deleteTemplate,
+  rotation,
+  setRotation,
   onEditPlan,
 }: WorkoutPlansSectionProps) {
   const { planSuggestions, config, status, declineSuggestion, undeclineSuggestion } = useAiCoach(
@@ -84,8 +96,64 @@ export function CoachSuggestions({
   }
 
   return (
-    <Card className="dashboard__plan-section">
-      <h2>Workout plans</h2>
+    <Collapsible title="Workout plans" defaultOpen={false} className="dashboard__plan-section">
+      <div className="dashboard__rotation">
+        <h3>Your rotation</h3>
+        {rotation.length === 0 ? (
+          <p className="dashboard__plans-hint">
+            No rotation yet — add a day below and the dashboard will tell you what's next.
+          </p>
+        ) : (
+          <ol className="dashboard__rotation-list">
+            {rotation.map((templateId, index) => (
+              <li key={index} className="dashboard__rotation-slot">
+                <Select
+                  label={`Day ${index + 1}`}
+                  value={templateId}
+                  onChange={(e) => setRotation(setRotationSlot(rotation, index, e.target.value))}
+                  options={templates.map((template) => ({ value: template.id, label: template.name }))}
+                />
+                <div className="dashboard__rotation-slot-actions">
+                  <button
+                    type="button"
+                    className="dashboard__plan-icon-btn"
+                    disabled={index === 0}
+                    onClick={() => setRotation(moveRotationSlot(rotation, index, -1))}
+                    aria-label={`Move day ${index + 1} earlier`}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard__plan-icon-btn"
+                    disabled={index === rotation.length - 1}
+                    onClick={() => setRotation(moveRotationSlot(rotation, index, 1))}
+                    aria-label={`Move day ${index + 1} later`}
+                  >
+                    ▼
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard__plan-icon-btn dashboard__plan-icon-btn--delete"
+                    onClick={() => setRotation(removeRotationSlot(rotation, index))}
+                    aria-label={`Remove day ${index + 1}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={templates.length === 0}
+          onClick={() => setRotation(addRotationSlot(rotation, templates[0].id))}
+        >
+          + Add day
+        </Button>
+      </div>
       {templates.length === 0 ? (
         <p className="dashboard__plans-hint">No saved plans yet — save one from the workout editor.</p>
       ) : (
@@ -168,6 +236,6 @@ export function CoachSuggestions({
           })}
         </ul>
       )}
-    </Card>
+    </Collapsible>
   )
 }

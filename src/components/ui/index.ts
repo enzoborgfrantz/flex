@@ -1,5 +1,6 @@
 export { Button } from './Button'
 export { Card } from './Card'
+export { Collapsible } from './Collapsible'
 export { TextField } from './TextField'
 export { NumberField } from './NumberField'
 export { Select } from './Select'

@@ -214,11 +214,6 @@
   width: 100%;
 }
 
-.dashboard__equipment h2 {
-  margin: 0 0 10px;
-  font-size: 16px;
-}
-
 .dashboard__equipment-hint {
   margin: 0 0 12px;
   color: var(--muted);
@@ -291,11 +286,6 @@
 
 .dashboard__plan-section {
   width: 100%;
-}
-
-.dashboard__plan-section h2 {
-  margin: 0 0 10px;
-  font-size: 16px;
 }
 
 .dashboard__plans-hint {
@@ -374,6 +364,74 @@
 
 .dashboard__plan-icon-btn--delete:hover {
   color: var(--label-red);
+}
+
+.dashboard__plan-icon-btn:disabled {
+  color: var(--recess-bg);
+  cursor: default;
+}
+
+.dashboard__rotation {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--accent-border);
+}
+
+.dashboard__rotation h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dashboard__rotation-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashboard__rotation-slot {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dashboard__rotation-slot .ui-field {
+  flex-grow: 1;
+}
+
+.dashboard__rotation-slot-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 10px;
+}
+
+.dashboard__next-up {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  border-color: var(--accent-border);
+}
+
+.dashboard__next-up-tag {
+  font-family: var(--heading);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--label-red);
+}
+
+.dashboard__next-up .dashboard__session-row {
+  width: 100%;
+}
+
+.dashboard__next-up .ui-button {
+  width: 100%;
 }
 
 .dashboard__coach-suggestions-list {

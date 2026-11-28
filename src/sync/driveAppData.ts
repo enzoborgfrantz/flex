@@ -104,3 +104,7 @@ export const equipmentDriveFile = createDriveAppDataFile<Equipment>(
   'flex-equipment.json',
   'flex.drive-equipment-file-id',
 )
+
+// The active rotation: an ordered list of template ids. Same whole-array sync shape as
+// equipment above — there's nothing to merge item-by-item, it's one sequence.
+export const planDriveFile = createDriveAppDataFile<string>('flex-plan.json', 'flex.drive-plan-file-id')

@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth, type AuthUser } from "../auth/AuthContext";
 import { CoachSuggestions } from "../components/CoachSuggestions";
 import { Logo } from "../components/Logo";
-import { Button, Card } from "../components/ui";
+import { Button, Card, Collapsible } from "../components/ui";
 import { equipmentOptions } from "../data/equipment";
+import { nextRotationSlot, removeTemplateFromRotation } from "../plans/plans";
 import { clearWorkoutDraft, loadWorkoutDraft } from "../storage/workoutDraftStore";
 import { useEquipment } from "../storage/useEquipment";
+import { usePlan } from "../sync/usePlan";
 import { useTemplates } from "../sync/useTemplates";
 import { useWorkouts, type SyncStatus } from "../sync/useWorkouts";
 import type { WorkoutSession, WorkoutTemplate } from "../types/workout";
@@ -15,7 +17,7 @@ import { WorkoutEditorPage } from "./WorkoutEditorPage";
 
 type View =
   | { name: "list" }
-  | { name: "new" }
+  | { name: "new"; presetTemplate?: WorkoutTemplate; presetSlotIndex?: number }
   | { name: "resume-draft" }
   | { name: "edit"; session: WorkoutSession }
   | { name: "edit-plan"; template: WorkoutTemplate }
@@ -126,8 +128,21 @@ export function DashboardPage() {
     useWorkouts();
   const { equipment, toggleEquipment } = useEquipment();
   const { templates, saveTemplate, deleteTemplate } = useTemplates();
+  const { rotation, setRotation } = usePlan();
   const [view, setView] = useState<View>({ name: "list" });
   const [draft, setDraft] = useState(() => loadWorkoutDraft());
+
+  // Deleting a template that's in use in the rotation should just drop its slot(s), not leave a
+  // dangling reference or block the delete.
+  const handleDeleteTemplate = (id: string) => {
+    deleteTemplate(id);
+    setRotation(removeTemplateFromRotation(rotation, id));
+  };
+
+  const nextSlot = nextRotationSlot(rotation, sessions);
+  const nextTemplate = nextSlot
+    ? templates.find((template) => template.id === nextSlot.templateId)
+    : undefined;
 
   // The draft can change while the editor is open, so refresh it whenever
   // we land back on the list — that's the only place it's displayed. The
@@ -166,16 +181,50 @@ export function DashboardPage() {
 
       {view.name === "list" && (
         <>
-          <div className="dashboard__toolbar">
-            <Button variant="metal" onClick={() => setView({ name: "new" })}>
-              New workout
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => setView({ name: "ai-coach" })}>
-              AI Coach
-            </Button>
-          </div>
-          <Card className="dashboard__equipment">
-            <h2>Your equipment</h2>
+          {nextTemplate && nextSlot ? (
+            <>
+              <Card
+                interactive
+                className="dashboard__next-up"
+                onClick={() => setView({ name: "new", presetTemplate: nextTemplate, presetSlotIndex: nextSlot.slotIndex })}
+              >
+                <span className="dashboard__next-up-tag">Next up</span>
+                <div className="dashboard__session-row">
+                  <strong>{nextTemplate.name}</strong>
+                  <p>
+                    {nextTemplate.exercises.length} exercise
+                    {nextTemplate.exercises.length === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setView({ name: "new", presetTemplate: nextTemplate, presetSlotIndex: nextSlot.slotIndex });
+                  }}
+                >
+                  Start
+                </Button>
+              </Card>
+              <div className="dashboard__toolbar dashboard__toolbar--secondary">
+                <Button variant="secondary" size="sm" onClick={() => setView({ name: "new" })}>
+                  New workout from scratch
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setView({ name: "ai-coach" })}>
+                  AI Coach
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="dashboard__toolbar">
+              <Button variant="metal" onClick={() => setView({ name: "new" })}>
+                New workout
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setView({ name: "ai-coach" })}>
+                AI Coach
+              </Button>
+            </div>
+          )}
+          <Collapsible title="Your equipment" defaultOpen={false} className="dashboard__equipment">
             <p className="dashboard__equipment-hint">
               What you've got access to — tap to toggle. Nothing selected means everything's assumed available.
             </p>
@@ -194,13 +243,15 @@ export function DashboardPage() {
                 </button>
               ))}
             </div>
-          </Card>
+          </Collapsible>
           <CoachSuggestions
             sessions={sessions}
             equipment={equipment}
             templates={templates}
             saveTemplate={saveTemplate}
-            deleteTemplate={deleteTemplate}
+            deleteTemplate={handleDeleteTemplate}
+            rotation={rotation}
+            setRotation={setRotation}
             onEditPlan={(template) => setView({ name: "edit-plan", template })}
           />
           <h2 className="dashboard__section-heading">Past workouts</h2>
@@ -265,10 +316,12 @@ export function DashboardPage() {
 
       {view.name === "new" && (
         <WorkoutEditorPage
+          initialTemplate={view.presetTemplate}
+          initialPlanSlotIndex={view.presetSlotIndex}
           history={sessions}
           templates={templates}
           saveTemplate={saveTemplate}
-          deleteTemplate={deleteTemplate}
+          deleteTemplate={handleDeleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}
         />
@@ -280,7 +333,7 @@ export function DashboardPage() {
           history={sessions}
           templates={templates}
           saveTemplate={saveTemplate}
-          deleteTemplate={deleteTemplate}
+          deleteTemplate={handleDeleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "list" })}
         />
@@ -292,7 +345,7 @@ export function DashboardPage() {
           history={sessions}
           templates={templates}
           saveTemplate={saveTemplate}
-          deleteTemplate={deleteTemplate}
+          deleteTemplate={handleDeleteTemplate}
           onSave={handleSave}
           onCancel={() => setView({ name: "detail", session: view.session })}
         />
@@ -304,7 +357,7 @@ export function DashboardPage() {
           history={sessions}
           templates={templates}
           saveTemplate={saveTemplate}
-          deleteTemplate={deleteTemplate}
+          deleteTemplate={handleDeleteTemplate}
           onSave={() => setView({ name: "list" })}
           onCancel={() => setView({ name: "list" })}
         />

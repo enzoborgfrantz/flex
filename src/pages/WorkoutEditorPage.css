@@ -36,7 +36,8 @@
   /* Bleed the panel to the screen edges instead of sitting inset inside
      both the page's own padding and the card's — one padding layer (the
      card's) reads as intentional; two reads as wasted mobile width. */
-  .workout-editor__exercises {
+  .workout-editor__exercises,
+  .workout-editor__library {
     margin-inline: -16px;
     border-radius: 0;
   }
@@ -64,11 +65,15 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
 }
 
 .workout-editor__entry {
-  background: var(--recess-bg);
+  /* Opaque (not the translucent --recess-bg used for inset wells) so each
+     card reads as its own distinct surface against the page's glow instead
+     of just a faint tint — the main thing separating one exercise from the
+     next in a long scrolling list. */
+  background: var(--recess-bg-solid);
   box-shadow: var(--recess-shadow);
   border-radius: 16px;
   padding: 16px;
@@ -95,7 +100,10 @@
 .workout-editor__entry-header strong {
   font-family: var(--sans);
   font-weight: 900;
-  color: var(--bone);
+  background: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 .workout-editor__entry-title {
@@ -103,6 +111,13 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
+}
+
+.workout-editor__entry-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .workout-editor__entry-move {
@@ -114,6 +129,9 @@
 
 .workout-editor__icon-btn {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 0;
   padding: 4px;
@@ -121,6 +139,10 @@
   line-height: 1;
   cursor: pointer;
   transition: color 0.15s ease;
+}
+
+.workout-editor__icon-btn svg {
+  display: block;
 }
 
 /* Deletes the whole exercise card — bold and unmistakable. */
@@ -161,15 +183,7 @@
   color: var(--label-red);
 }
 
-.workout-editor__sets-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
 .workout-editor__sets {
-  /* Auto width keeps columns hugging their content instead of the browser
-     dumping all leftover space into the empty trailing (remove-button)
-     header cell — that's what was scattering columns across the card. */
   width: auto;
   max-width: 100%;
   border-collapse: collapse;
@@ -192,13 +206,6 @@
   padding: 4px 8px;
   font-family: var(--mono);
   color: var(--muted);
-}
-
-/* Give the remove button its own breathing room so it doesn't read as
-   glued to the weight field next to it. */
-.workout-editor__sets th:last-child,
-.workout-editor__sets td:last-child {
-  padding-left: 20px;
 }
 
 .workout-editor__sets input {
@@ -226,10 +233,247 @@
   .workout-editor__sets td {
     padding: 4px 6px;
   }
+}
 
-  .workout-editor__sets th:last-child,
-  .workout-editor__sets td:last-child {
-    padding-left: 14px;
+/* Set list: each logged set is a row — a numbered step, its reps/weight
+   readouts (self-labelled, so no column header is needed above them), and
+   the done/remove actions. */
+.workout-editor__set-list {
+  --set-row-gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--set-row-gap);
+  margin-bottom: 12px;
+  /* Room for the floating field labels, which sit on the top edge of the
+     first row's inputs and would otherwise overlap whatever comes before
+     this list. */
+  padding-top: 6px;
+}
+
+.workout-editor__set-row {
+  display: grid;
+  /* A fixed-px minimum (not max-content) for the Reps/Weight tracks: an
+     <input> with a percentage width doesn't contribute that percentage to
+     its own intrinsic size, so `max-content` here would size the column off
+     the input's unstyled default (far wider than the box actually needs)
+     and blow out the row. */
+  grid-template-columns: 28px repeat(2, minmax(64px, 1fr)) auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The step column stretches to the row's full height (rather than hugging
+   the badge like the other columns do) purely so the connecting line below
+   has something to measure "half the row" against — the badge itself stays
+   centered inside it via its own flex centering. */
+.workout-editor__set-step {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* A line through the step numbers, built from one segment per row rather
+   than a single element spanning the list: each segment runs from this
+   row's own center past its bottom edge, through the gap, to meet the next
+   row's center — which keeps it correct regardless of how tall any row
+   renders, instead of assuming a fixed row height. The first row only
+   draws the lower half (nothing above the first number); the last row
+   doesn't draw past its own center (nothing below the last number). */
+.workout-editor__set-step::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: calc(100% + var(--set-row-gap));
+  background: rgba(158, 163, 171, 0.45);
+}
+
+.workout-editor__set-row:first-child .workout-editor__set-step::after {
+  top: 50%;
+  height: calc(50% + var(--set-row-gap));
+}
+
+.workout-editor__set-row:last-child .workout-editor__set-step::after {
+  height: 50%;
+}
+
+.workout-editor__set-row:first-child:last-child
+  .workout-editor__set-step::after {
+  display: none;
+}
+
+/* A done row's segment runs into the next step, so it reads as the
+   "completed" stretch of the line rather than the same neutral track as
+   the sets still ahead. */
+.workout-editor__set-row--done .workout-editor__set-step::after {
+  background: var(--label-red);
+}
+
+/* The badge: same construction as the secondary button (ring via a masked
+   gradient border, number via gradient-clipped text) so it reads as the
+   same "chrome" family instead of introducing a new color. Explicit
+   stacking above the step's own ::after line, which paints in the same
+   local stacking context and would otherwise sit on top of a non-positioned
+   badge. */
+.workout-editor__set-number {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--recess-bg-solid);
+  box-shadow: var(--recess-shadow);
+}
+
+.workout-editor__set-number::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--metal-outline-gradient);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.workout-editor__set-number-text {
+  position: relative;
+  font-family: var(--heading);
+  font-size: 12px;
+  background: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.workout-editor__set-field {
+  position: relative;
+  display: block;
+  border-radius: 10px;
+}
+
+/* Same ring construction as the secondary button and the set-number badge:
+   a masked gradient border, rather than a real `border`, so corners stay
+   clean at any radius. */
+.workout-editor__set-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--metal-outline-gradient);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* The label sits astride the field's top edge, same as a fieldset legend —
+   now that the field itself is a plain ring rather than a glowing well,
+   both sides of that seam are just the row's own background, so a flat
+   chip in that color is enough to break the border cleanly; no gradient or
+   blur needed to hide a mismatch that no longer exists. The chip's own
+   background can't be the same element as the gradient-clipped text below
+   (background-clip: text would clip away the chip fill everywhere but the
+   letters), so the text gets its own inner span. */
+.workout-editor__set-field-label {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 10px;
+  transform: translateY(-50%);
+  padding: 0 5px;
+  background: #0a0303;
+  font-family: var(--heading);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.workout-editor__set-field-label-text {
+  background: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.workout-editor__set-field input {
+  width: 100%;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  padding: 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  background-image: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  caret-color: var(--bone);
+}
+
+/* Done: the ring, badge and input text switch from metal to the same flat
+   red used elsewhere for destructive/accent marks (e.g. the trash icon), so
+   a finished set reads as finished at a glance instead of looking identical
+   to the one still in progress. */
+.workout-editor__set-row--done .workout-editor__set-number::before,
+.workout-editor__set-row--done .workout-editor__set-field::before {
+  background: var(--label-red);
+}
+
+.workout-editor__set-row--done .workout-editor__set-number-text,
+.workout-editor__set-row--done .workout-editor__set-field-label-text {
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  color: var(--label-red);
+}
+
+.workout-editor__set-row--done .workout-editor__set-field input {
+  background-image: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  color: var(--label-red);
+  caret-color: var(--label-red);
+}
+
+/* Upcoming: no new color, just recede behind the current set so the one
+   row that actually needs attention stands out. */
+.workout-editor__set-row--upcoming {
+  opacity: 0.45;
+}
+
+@media (max-width: 480px) {
+  .workout-editor__set-row {
+    gap: 8px;
+  }
+
+  .workout-editor__set-field input {
+    padding: 8px;
   }
 }
 
@@ -398,21 +642,31 @@
   color: var(--label-red);
 }
 
+/* Secondary actions (Cancel, Save as plan / Save plan) share a row; the
+   primary Save sits full-width below so it's unambiguous and easy to hit
+   with a thumb on mobile. */
 .workout-editor__actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 12px;
 }
 
-@media (max-width: 480px) {
-  .workout-editor__actions {
-    flex-wrap: nowrap;
-  }
+.workout-editor__actions-row {
+  display: flex;
+  gap: 12px;
+}
 
-  .workout-editor__actions > * {
-    flex: 1;
-  }
+.workout-editor__actions-row > * {
+  flex: 1;
+  white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.workout-editor__save-btn {
+  width: 100%;
 }
 
 .workout-editor__plans {
@@ -462,33 +716,8 @@
   color: var(--label-red);
 }
 
-/* Sits at the left of the actions row, apart from the session's own Cancel / Save. */
-.workout-editor__save-plan-btn {
-  margin-right: auto;
-}
-
-.workout-editor__save-plan {
-  align-items: center;
-}
-
 .workout-editor__save-plan .ui-field {
-  flex: 1;
-  min-width: 180px;
-}
-
-@media (max-width: 480px) {
-  /* Three buttons don't fit one row on a phone: give "Save as plan" (and
-     the plan name field) a full-width row of their own. */
-  .workout-editor__actions:has(.workout-editor__save-plan-btn),
-  .workout-editor__save-plan {
-    flex-wrap: wrap;
-  }
-
-  .workout-editor__actions > .workout-editor__save-plan-btn,
-  .workout-editor__save-plan > .ui-field {
-    flex-basis: 100%;
-    margin-right: 0;
-  }
+  width: 100%;
 }
 
 .workout-editor__icon-btn--edit {
@@ -509,28 +738,57 @@
 
 .workout-editor__entry-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.workout-editor__entry-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: -4px 0 8px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--muted);
+.workout-editor__add-set {
+  width: 100%;
 }
 
 .workout-editor__nudge {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0 0 10px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 10px;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
+  background: var(--recess-bg);
+  box-shadow: var(--recess-shadow);
   font-size: 13px;
-  color: var(--bone);
+}
+
+/* Same masked-gradient ring as the set-number badge and set fields, so the
+   hint reads as part of the same chrome family instead of its own accent. */
+.workout-editor__nudge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--metal-outline-gradient);
+  opacity: 0.55;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.workout-editor__nudge span {
+  background: var(--metal-outline-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.workout-editor__nudge svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--muted);
 }
 
 .workout-editor__rep-range {
@@ -546,30 +804,75 @@
 }
 
 .workout-editor__done {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: 0;
   border-radius: 10px;
   background: var(--recess-bg);
   box-shadow: var(--recess-shadow);
   color: var(--muted);
-  font-size: 15px;
-  line-height: 1;
   cursor: pointer;
   transition:
     background 0.15s ease,
-    color 0.15s ease;
+    box-shadow 0.15s ease,
+    color 0.15s ease,
+    transform 0.05s ease;
+}
+
+/* Off state gets the same masked-gradient chrome ring as the set-number
+   badge and the input fields, so it reads as hardware waiting to be
+   pressed rather than a flat dark square. */
+.workout-editor__done::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--metal-outline-gradient);
+  opacity: 0.55;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
 .workout-editor__done:hover {
   color: var(--bone);
 }
 
+.workout-editor__done:hover::before {
+  opacity: 1;
+}
+
+.workout-editor__done:active {
+  transform: translateY(1px);
+}
+
+/* On state: the same flat red as the rest of a completed set (ring, text,
+   trash icon), not the glossy gel used for primary buttons — keeps "done"
+   reading as one consistent color instead of a different material. */
 .workout-editor__done--on {
   background: var(--label-red);
   box-shadow: none;
+  color: var(--bone);
+}
+
+.workout-editor__done--on::before {
+  opacity: 0;
+}
+
+.workout-editor__done--on:hover {
+  background: #a51011;
   color: var(--bone);
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RestTimer, type RestTimerState } from "../components/RestTimer";
-import { Button, Card, NumberField, TextField } from "../components/ui";
+import { Button, Card, Collapsible, NumberField, TextField } from "../components/ui";
 import {
   getExerciseById,
   muscleGroups,
@@ -9,8 +9,6 @@ import {
 import {
   entriesFromTemplate,
   findLastEntry,
-  formatEntry,
-  formatTarget,
   isReadyToIncrease,
   templateExercisesFromEntries,
 } from "../plans/plans";
@@ -33,6 +31,50 @@ import "./WorkoutEditorPage.css";
 
 const DEFAULT_TARGET: ExerciseTarget = { sets: 3, repsMin: 8, repsMax: 12 };
 const DEFAULT_REST_SEC = 90;
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
+      <path
+        d="M4 6h12M8 6V4.5A1.5 1.5 0 0 1 9.5 3h1A1.5 1.5 0 0 1 12 4.5V6M15 6l-.72 10.1a1.5 1.5 0 0 1-1.5 1.4H7.22a1.5 1.5 0 0 1-1.5-1.4L5 6"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M8.3 9v5.2M11.7 9v5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
+      <path
+        d="M4 10.3l3.7 3.7L16 5.8"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TrendUpIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
+      <path
+        d="M3 13.5l5-5 3 3 6-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M12.5 4.5h4.5v4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -65,6 +107,11 @@ interface WorkoutEditorPageProps {
   // Jumps straight into "Edit plan" for this template — used by the dashboard's
   // Workout Plans section, which has no "new workout" screen to fall back to.
   initialEditingTemplate?: WorkoutTemplate;
+  // Pre-fills entries from this template, like picking it from "Load a plan" — used by the
+  // dashboard's "Next up" card. initialPlanSlotIndex comes along with it so the saved session
+  // can be stamped as having completed that rotation slot.
+  initialTemplate?: WorkoutTemplate;
+  initialPlanSlotIndex?: number;
   history: WorkoutSession[];
   templates: WorkoutTemplate[];
   saveTemplate: (name: string, exercises: TemplateExercise[], id?: string) => void;
@@ -77,6 +124,8 @@ export function WorkoutEditorPage({
   initialSession,
   startFromDraft,
   initialEditingTemplate,
+  initialTemplate,
+  initialPlanSlotIndex,
   history,
   templates,
   saveTemplate,
@@ -90,8 +139,19 @@ export function WorkoutEditorPage({
     initialSession?.date ?? draft?.date ?? todayIso(),
   );
   const [entries, setEntries] = useState<ExerciseEntry[]>(
-    initialSession?.exercises ?? draft?.exercises ?? [],
+    initialSession?.exercises ??
+      draft?.exercises ??
+      (initialTemplate
+        ? entriesFromTemplate(initialTemplate, history, todayIso())
+        : []),
   );
+  // Generated once per editor instance rather than in handleSave, so that a repeat save
+  // (e.g. a double-tap on "Save" before the view switches away) overwrites the same
+  // session instead of a fresh random id creating a duplicate entry.
+  const sessionIdRef = useRef(initialSession?.id ?? crypto.randomUUID());
+  // Fixed for the life of this editor instance — only ever set by the "Next up" flow, or
+  // carried over when re-editing a session that was already stamped.
+  const planSlotIndex = initialPlanSlotIndex ?? initialSession?.planSlotIndex;
   // Tracks whether this session has ever held exercises, so a blank "new
   // workout" that's immediately cancelled doesn't wipe out an unrelated
   // draft that was already saved from a previous session.
@@ -430,10 +490,11 @@ export function WorkoutEditorPage({
 
   const handleSave = () => {
     const session: WorkoutSession = {
-      id: initialSession?.id ?? crypto.randomUUID(),
+      id: sessionIdRef.current,
       date,
       exercises: entries,
       updatedAt: Date.now(),
+      ...(planSlotIndex !== undefined ? { planSlotIndex } : {}),
     };
     if (!initialSession) clearWorkoutDraft();
     onSave(session);
@@ -464,7 +525,7 @@ export function WorkoutEditorPage({
             <br />
           </>
         )}
-        {!initialSession && !editingPlan && templates.length > 0 && (
+        {!initialSession && !editingPlan && !initialTemplate && templates.length > 0 && (
           <>
             <h2>Load a plan</h2>
             <ul className="workout-editor__plans">
@@ -622,50 +683,83 @@ export function WorkoutEditorPage({
                 (suggestion) => suggestion.exerciseId === entry.exerciseId,
               );
               const nudgeText = weightSuggestion
-                ? `↑ ${weightSuggestion.detail}`
+                ? weightSuggestion.detail
                 : entry.target && last && isReadyToIncrease(last, entry.target.repsMax)
-                  ? `↑ You hit ${entry.target.repsMax} on every set last time — time to go up in weight.`
+                  ? `You hit ${entry.target.repsMax} on every set last time — time to go up in weight.`
                   : null;
               return (
                 <li key={entry.id} className="workout-editor__entry">
                   <div className="workout-editor__entry-header">
                     <strong>{entry.name}</strong>
-                    <button
-                      type="button"
-                      className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
-                      onClick={() => removeExercise(entry.id)}
-                      aria-label="Remove exercise"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  {(entry.target || last) && (
-                    <div className="workout-editor__entry-meta">
-                      {entry.target && (
-                        <span>Target {formatTarget(entry.target)}</span>
-                      )}
-                      {last && <span>Last: {formatEntry(last)}</span>}
+                    <div className="workout-editor__entry-actions">
+                      <div className="workout-editor__entry-move">
+                        <button
+                          type="button"
+                          className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                          onClick={() => moveExercise(entry.id, -1)}
+                          disabled={index === 0}
+                          aria-label="Move exercise up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="workout-editor__icon-btn workout-editor__icon-btn--move"
+                          onClick={() => moveExercise(entry.id, 1)}
+                          disabled={index === entries.length - 1}
+                          aria-label="Move exercise down"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className="workout-editor__icon-btn workout-editor__icon-btn--exercise"
+                        onClick={() => removeExercise(entry.id)}
+                        aria-label="Remove exercise"
+                      >
+                        <TrashIcon />
+                      </button>
                     </div>
-                  )}
+                  </div>
                   {nudgeText && (
-                    <p className="workout-editor__nudge">{nudgeText}</p>
+                    <p className="workout-editor__nudge">
+                      <TrendUpIcon />
+                      <span>{nudgeText}</span>
+                    </p>
                   )}
-                  <div className="workout-editor__sets-wrap">
-                    <table className="workout-editor__sets">
-                      <thead>
-                        <tr>
-                          <th>Set</th>
-                          <th>Reps</th>
-                          <th>Weight (kg)</th>
-                          <th>Done</th>
-                          <th />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {entry.sets.map((set, setIndex) => (
-                          <tr key={setIndex}>
-                            <td>{setIndex + 1}</td>
-                            <td>
+                  <div className="workout-editor__set-list">
+                    {(() => {
+                      const firstActiveIndex = entry.sets.findIndex(
+                        (set) => !set.done,
+                      );
+                      return entry.sets.map((set, setIndex) => {
+                        const rowStatus = set.done
+                          ? "done"
+                          : setIndex === firstActiveIndex
+                            ? "current"
+                            : "upcoming";
+                        return (
+                          <div
+                            className={`workout-editor__set-row workout-editor__set-row--${rowStatus}`}
+                            key={setIndex}
+                          >
+                            <div
+                              className="workout-editor__set-step"
+                              aria-hidden="true"
+                            >
+                              <span className="workout-editor__set-number">
+                                <span className="workout-editor__set-number-text">
+                                  {setIndex + 1}
+                                </span>
+                              </span>
+                            </div>
+                            <label className="workout-editor__set-field">
+                              <span className="workout-editor__set-field-label">
+                                <span className="workout-editor__set-field-label-text">
+                                  Reps
+                                </span>
+                              </span>
                               <NumberField
                                 min={0}
                                 value={set.reps}
@@ -673,8 +767,13 @@ export function WorkoutEditorPage({
                                   updateSet(entry.id, setIndex, { reps })
                                 }
                               />
-                            </td>
-                            <td>
+                            </label>
+                            <label className="workout-editor__set-field">
+                              <span className="workout-editor__set-field-label">
+                                <span className="workout-editor__set-field-label-text">
+                                  Weight (kg)
+                                </span>
+                              </span>
                               <NumberField
                                 min={0}
                                 step={0.5}
@@ -683,75 +782,56 @@ export function WorkoutEditorPage({
                                   updateSet(entry.id, setIndex, { weightKg })
                                 }
                               />
-                            </td>
-                            <td>
-                              <button
-                                type="button"
-                                className={`workout-editor__done${
-                                  set.done ? " workout-editor__done--on" : ""
-                                }`}
-                                onClick={() =>
-                                  toggleSetDone(entry, setIndex, !set.done)
-                                }
-                                aria-pressed={!!set.done}
-                                aria-label={`Set ${setIndex + 1} done`}
-                              >
-                                ✓
-                              </button>
-                            </td>
-                            <td>
-                              <button
-                                type="button"
-                                className="workout-editor__icon-btn workout-editor__icon-btn--set"
-                                onClick={() => removeSet(entry.id, setIndex)}
-                                aria-label="Remove set"
-                              >
-                                ✕
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                            </label>
+                            <button
+                              type="button"
+                              className={`workout-editor__done${
+                                set.done ? " workout-editor__done--on" : ""
+                              }`}
+                              onClick={() =>
+                                toggleSetDone(entry, setIndex, !set.done)
+                              }
+                              aria-pressed={!!set.done}
+                              aria-label={`Set ${setIndex + 1} done`}
+                            >
+                              <CheckIcon />
+                            </button>
+                            <button
+                              type="button"
+                              className="workout-editor__icon-btn workout-editor__icon-btn--set"
+                              onClick={() => removeSet(entry.id, setIndex)}
+                              aria-label="Remove set"
+                            >
+                              <TrashIcon />
+                            </button>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                   <div className="workout-editor__entry-footer">
                     <Button
                       variant="secondary"
-                      size="sm"
+                      className="workout-editor__add-set"
                       onClick={() => addSet(entry.id)}
                     >
                       + Add set
                     </Button>
-                    <div className="workout-editor__entry-move">
-                      <button
-                        type="button"
-                        className="workout-editor__icon-btn workout-editor__icon-btn--move"
-                        onClick={() => moveExercise(entry.id, -1)}
-                        disabled={index === 0}
-                        aria-label="Move exercise up"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        className="workout-editor__icon-btn workout-editor__icon-btn--move"
-                        onClick={() => moveExercise(entry.id, 1)}
-                        disabled={index === entries.length - 1}
-                        aria-label="Move exercise down"
-                      >
-                        ↓
-                      </button>
-                    </div>
                   </div>
                 </li>
               );
             })}
           </ul>
         )}
+      </Card>
 
-        <hr className="workout-editor__divider" />
-
-        <h2>Exercises</h2>
+      <Collapsible
+        title="Exercises"
+        defaultOpen={
+          editingPlan ? editingPlan.exercises.length === 0 : entries.length === 0
+        }
+        className="workout-editor__library"
+      >
         <div className="workout-editor__filters">
           <TextField
             aria-label="Exercise library"
@@ -819,22 +899,27 @@ export function WorkoutEditorPage({
             aria-hidden="true"
           />
         </div>
-      </Card>
+      </Collapsible>
 
       {planName === null ? (
         <div className="workout-editor__actions">
+          <div className="workout-editor__actions-row">
+            <Button variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={entries.length === 0}
+              onClick={() => setPlanName("")}
+            >
+              Save as plan
+            </Button>
+          </div>
           <Button
-            variant="secondary"
-            className="workout-editor__save-plan-btn"
-            disabled={entries.length === 0}
-            onClick={() => setPlanName("")}
+            className="workout-editor__save-btn"
+            disabled={!canSave}
+            onClick={handleSave}
           >
-            Save as plan
-          </Button>
-          <Button variant="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button disabled={!canSave} onClick={handleSave}>
             Save
           </Button>
         </div>
@@ -861,12 +946,14 @@ export function WorkoutEditorPage({
               ))}
             </datalist>
           )}
-          <Button variant="secondary" onClick={stopEditingPlan}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={!canSavePlan}>
-            Save plan
-          </Button>
+          <div className="workout-editor__actions-row">
+            <Button variant="secondary" onClick={stopEditingPlan}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!canSavePlan}>
+              Save plan
+            </Button>
+          </div>
           {planNameTaken && (
             <p className="workout-editor__plan-error">
               Another plan is already called “{trimmedPlanName}”.
